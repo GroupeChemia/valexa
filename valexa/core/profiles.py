@@ -8,15 +8,17 @@ from scipy.stats import t
 import math
 import numpy as np
 
+import io
+
 from valexa.core.standard import Standard
 from valexa.core.models import Result, ModelHandler, Model
 
 DEFAULT_TOLERANCE = 80
-DEFAULT_ACCEPTANCE = 20
+DEFAULT_ACCEPTANCE = 50
 
 
 def make_profiles(calib_data: List[tuple], valid_data: List[tuple], tolerance_limit: int,
-                  acceptance_limit: int) -> List:
+                  acceptance_limit: int, file_name: str) -> List:
     std_calib = Standard(calib_data)
     std_valid = Standard(valid_data)
     model_handler = ModelHandler(std_calib, std_valid)
@@ -26,6 +28,9 @@ def make_profiles(calib_data: List[tuple], valid_data: List[tuple], tolerance_li
     profiles = []
     for model in models:
         profile = Profile(model)
+        profile.name_of_file = file_name
+        profile.tolerance_limit = tolerance_limit
+        profile.acceptance_limit = acceptance_limit
         profile.calculate(tolerance_limit, acceptance_limit)
         profiles.append(profile)
 
@@ -43,8 +48,10 @@ class ProfileLevel:
         self.recovery: float = None
         self.repeatability_var: float = None
         self.repeatability_std: float = None
+        self.repeatability_std_pc: float = None
         self.inter_series_var: float = None
         self.inter_series_std: float = None
+        self.inter_series_std_pc: float = None
         self.intermediate_precision_std: float = None
         self.abs_tolerance: List[float] = []
         self.rel_tolerance: List[float] = []
@@ -77,8 +84,10 @@ class ProfileLevel:
         self.recovery = (self.calculated_concentration / self.introduced_concentration) * 100
         self.repeatability_var = self.get_repeatability_var()
         self.repeatability_std = np.sqrt(self.repeatability_var)
+        self.repeatability_std_pc = self.repeatability_std/self.calculated_concentration * 100
         self.inter_series_var = self.get_inter_series_var()
         self.inter_series_std = np.sqrt(self.inter_series_var)
+        self.inter_series_std_pc = self.inter_series_std / self.calculated_concentration * 100
         self.abs_tolerance = self.get_absolute_tolerance(tolerance_limit)
         self.rel_tolerance = [(tol / self.introduced_concentration) * 100 for tol in self.abs_tolerance]
 
@@ -155,6 +164,10 @@ class Profile:
         self.max_lq: float = None
         self.ld: float = None
         self.has_limits = False
+        self.name_of_file: str = None
+        self.acceptance_limit: int = None
+        self.tolerance_limit: int = None
+        self.image_data = None
 
         self.__split_series_by_levels()
         self.levels.sort(key=attrgetter('index'))
@@ -184,6 +197,7 @@ class Profile:
             self.ld = None
 
     def get_limits_of_quantification(self, acceptance_limit: int) -> (float, float):
+        print('LOQ START')
         intersects_low = []
         intersects_high = []
 
@@ -198,10 +212,14 @@ class Profile:
                 intersects_high.append(upper_intersect)
 
         lower_limits = self.get_limits_from_intersects(intersects_low, acceptance_limit, self.LIMIT_LOWER)
+        print('LINTER MID')
         upper_limits = self.get_limits_from_intersects(intersects_high, acceptance_limit, self.LIMIT_UPPER)
 
+        print('LINTER END')
         limits = self.get_most_restrictive_limits(lower_limits, upper_limits)
 
+        print('LIMIT PASS')
+        print('LOQ')
         return limits
 
     def get_intersect_between_levels(self, level_a, level_b, accept_limit: int, limit_type) -> Intersect:
@@ -247,6 +265,7 @@ class Profile:
     def get_limits_from_intersects(self, intersects: List[Intersect], accept_limit: int, limit_type: int) -> (
             float, float):
 
+        print('LINTER START')
         if len(intersects) == 0:
             low_accept_limit_rel = (1 - (accept_limit / 100)) * 100
             high_accept_limit_rel = (1 + (accept_limit / 100)) * 100
@@ -279,6 +298,7 @@ class Profile:
         else:
             raise ValueError("Cannot define limits from intersects")
 
+        print('LINTER')
         return limits
 
     def group_intersects_by_in_out(self, intersects: List[Intersect]) -> List:
@@ -315,3 +335,4 @@ class Profile:
         ax.set_xlabel("Concentration")
         ax.set_ylabel("Recovery (%)")
         ax.legend(loc=1)
+
