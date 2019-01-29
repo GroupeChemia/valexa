@@ -9,6 +9,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_profileWidget(object):
+
     def setupUi(self, profileWidget):
         profileWidget.setObjectName("profileWidget")
         profileWidget.resize(400, 300)
@@ -63,4 +64,3 @@ class Ui_profileWidget(object):
         self.min_lq_label.setText(_translate("profileWidget", "min_lq_label"))
         self.max_lq_label.setText(_translate("profileWidget", "max_lq_label"))
         self.ld_label.setText(_translate("profileWidget", "ld_label"))
-

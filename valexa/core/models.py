@@ -32,9 +32,9 @@ class Model:
         recoveries = [(s.result / s.concentration) * 100 for s in self.series_calculated]
         recovery_avg: float = np.mean(recoveries)
 
-        if abs(100 - recovery_avg) >= 15:
+        if abs(100 - recovery_avg) >= 4:
             self.has_correction = True
-            self.correction_factor = round(1 / (recovery_avg / 100), 1)
+            self.correction_factor = round(1 / (recovery_avg / 100), 2)
             self.__apply_correction()
 
     def __apply_correction(self):

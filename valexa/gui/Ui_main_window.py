@@ -198,7 +198,7 @@ class Ui_MainWindow(object):
         self.toleranceLimitLabel.setText(_translate("MainWindow", "Tolerance limit (%)"))
         self.toleranceLimitLineEdit.setText(_translate("MainWindow", "80"))
         self.acceptanceLimitLabel.setText(_translate("MainWindow", "Acceptance Limit (%)"))
-        self.acceptanceLimitLineEdit.setText(_translate("MainWindow", "20"))
+        self.acceptanceLimitLineEdit.setText(_translate("MainWindow", "45"))
         self.label_3.setText(_translate("MainWindow", "Calibration data"))
         self.label_4.setText(_translate("MainWindow", "Validation data"))
         self.confirm_data_button.setText(_translate("MainWindow", "Next"))

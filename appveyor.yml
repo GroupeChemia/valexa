@@ -2,7 +2,7 @@ build: false
 
 environment:
   matrix:
-#  - PYTHON: "C:\\Python36-x64"
+#    - PYTHON: "C:\\Python36-x64"
   - PYTHON: "C:\\Miniconda36-x64"
 
 install:
@@ -12,7 +12,7 @@ install:
 
   - "conda install -yq pip numpy scipy matplotlib"
 
-  - "C:\\Miniconda36-x64\\python.exe -m pip install --disable-pip-version-check --user --upgrade pip"
+  - "pip install --disable-pip-version-check --user --upgrade pip"
   - "pip install --upgrade pipenv"
   - "pipenv install --system --dev"
 
