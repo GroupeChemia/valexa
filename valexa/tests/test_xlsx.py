@@ -25,7 +25,7 @@ class TestXlsxHandler:
         with pytest.raises(ValueError) as exception:
             xs = XlsxHandler(filename_empty)
 
-        assert "Bad format " in str(exception)
+        assert "Bad format " in str(exception.value)
 
     def test_get_calibration_data(self, filename):
         xs = XlsxHandler(filename)

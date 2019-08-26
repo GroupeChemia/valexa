@@ -5,7 +5,8 @@ from PyQt5.QtWidgets import QWidget, QTableWidgetItem
 
 from valexa.core.profiles import Profile
 from valexa.gui.Ui_profile_widget import Ui_profileWidget
-from valexa.gui.profile_plot_canvas import ProfilePlotCanvas
+from valexa.ploting.mathplotlib.canvas import ProfilePlotCanvasQTAgg \
+                                                        as ProfilePlotCanvas
 
 
 class ProfileWidget(QWidget, Ui_profileWidget):

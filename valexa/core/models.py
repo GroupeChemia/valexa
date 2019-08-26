@@ -19,7 +19,7 @@ class Model:
         self.series_params = {}
         self.series_calculated: List[Result] = []
         self.has_correction: bool = False
-        self.correction_factor: float = None
+        self.correction_factor: float = 1.0
 
     @property
     def name(self) -> str:

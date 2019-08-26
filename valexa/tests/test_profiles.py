@@ -1,6 +1,4 @@
 import pytest
-from matplotlib import pyplot as plt
-import mpl_toolkits.axisartist as AA
 from unittest.mock import Mock
 
 from valexa.core.profiles import make_profiles, Profile, Intersect, Direction
@@ -169,16 +167,3 @@ class TestProfile:
         limits = profile.get_most_restrictive_limits(lower_limits, upper_limits)
 
         assert limits == (3, 4)
-
-    def test_plot_function(self, model_with_rep):
-        tolerance_limit = 80
-        acceptance_limit = 20
-        profile = Profile(model_with_rep)
-        profile.calculate(tolerance_limit, acceptance_limit)
-        fig = plt.figure()
-        ax = AA.Subplot(fig, 111)
-        fig.add_subplot(ax)
-
-        profile.make_plot(ax)
-
-        # plt.show()

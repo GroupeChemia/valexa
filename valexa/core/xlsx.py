@@ -1,7 +1,7 @@
 from enum import Enum
 
 import openpyxl
-from openpyxl.worksheet import Worksheet
+from openpyxl.worksheet.worksheet import Worksheet
 
 CALIBRATION_SHEET_NAME = "Calibration_STD"
 VALIDATION_SHEET_NAME = "Validation_STD"
