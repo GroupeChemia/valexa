@@ -21,9 +21,14 @@ Valexa use [Poetry](https://python-poetry.org/) as a package manager.
     
     poetry install
     
+    poetry shell
+    
     nodeenv -p
     
     npm install
+    
+Si une erreur 'undefined ls-remote -h -t ssh: ...' apparait avec la commande 'npm install', télécharger 
+[Git For Windows](https://gitforwindows.org/) et l'installer.
     
 ### How to use
 

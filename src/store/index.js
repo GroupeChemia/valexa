@@ -60,6 +60,8 @@ export default new Vuex.Store({
     profileGenerationParams: {},
 
     modelParams: {},
+
+    profilesReport: []
   },
 
   mutations: {
@@ -295,6 +297,10 @@ export default new Vuex.Store({
     resetProfile (state) {
       state.profiler.listLocation = 0
       state.listOfProfile = {}
+    },
+
+    setProfilesReport(state, parameter){
+      state.profilesReport = state.profilesReport.concat(parameter.profilesReport)
     }
   },
 

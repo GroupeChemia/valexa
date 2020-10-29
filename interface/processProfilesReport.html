@@ -1,0 +1,50 @@
+<script>
+    const { ipcRenderer } = require('electron');
+    const loadBalancer = require('electron-load-balancer');
+    const { PythonShell } = require('python-shell')
+    const path = require('path');
+
+    let pyshell = new PythonShell('interface.py', {
+        pythonPath: path.join(process.env["npm_config_prefix"], '\\python'),
+        pythonOptions: ['-u'],
+        args: ['processProfilesReport']
+    } )
+
+    loadBalancer.job(
+        ipcRenderer,
+        'processProfilesReport',
+        () => {
+
+            loadBalancer.onReceiveData(ipcRenderer, 'processProfilesReport', args => {
+                pyshell.send(JSON.stringify(args.data));
+            });
+
+            pyshell.on('message', function(message) {
+                ipcRenderer.send("GEN_MESSAGE", message)
+
+                if (message === "EXIT") {
+                    ipcRenderer.send("CHANNEL_PROFILES_REPORT", 'processProfilesReport STOP')
+                    loadBalancer.stop(ipcRenderer, 'processProfilesReport')
+
+                } else {
+                    try {
+                        const parsedJSON = JSON.parse(message)
+                        ipcRenderer.send("CHANNEL_PROFILES_REPORT", {
+                            type: parsedJSON['type'],
+                            data: parsedJSON['data']
+                        })
+                    } catch (e) {
+                        console.log(e)
+                        console.log(message)
+                    }
+                }
+            })
+
+
+            ipcRenderer.send("CHANNEL_PROFILES_REPORT", 'processProfilesReport READY')
+        },
+        () => {
+            pyshell.terminate()
+        });
+
+</script>

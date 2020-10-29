@@ -1,7 +1,7 @@
 <template>
       <v-row>
         <v-col>
-          <span class="text-h5">Trueness</span>
+          <span class="text-h5">Validation Uncertainty</span>
           <v-data-table
             dense
             :headers="headers"
@@ -51,7 +51,7 @@
           value: 'uncertainty_abs'
         },
         {
-          text: 'Absolute Expanded Uncertainty',
+          text: 'PC Expanded Uncertainty',
           value: 'uncertainty_pc'
         }
       ]

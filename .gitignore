@@ -136,3 +136,8 @@ pnpm-debug.log*
 /dist_electron
 
 *.xlsx
+filesTex/profiles/
+filesTex/ListParagraphsProfile.tex
+/filesReport/profiles/
+/filesReport/RapportValidation.docx
+mainTestAlizee.py

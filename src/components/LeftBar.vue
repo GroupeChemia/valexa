@@ -53,6 +53,11 @@
                         text: 'Profiles',
                         to: 'profiles'
                     },
+                    report: {
+                        icon: 'mdi-file-chart-outline',
+                        text: 'Report',
+                        to: 'report'
+                    },
                 }
             }
     }

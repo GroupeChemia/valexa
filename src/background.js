@@ -96,6 +96,9 @@ var loadBalancerPath = {
   },
   'get_params': {
     url: 'valexa/interface/get_params.html'
+  },
+  'processProfilesReport':{
+    url: 'valexa/interface/processProfilesReport.html'
   }
 }
 
@@ -136,4 +139,8 @@ ipcMain.on('PROFILER_WORKER_INIT', (events, args) => {
 
 ipcMain.on('PROFILER_WORKER_ERROR', (events, args) => {
   win.webContents.send('PROFILER_WORKER_ERROR', args)
+})
+
+ipcMain.on('CHANNEL_PROFILES_REPORT', (events, args) => {
+  win.webContents.send('CHANNEL_PROFILES_REPORT', args)
 })

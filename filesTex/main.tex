@@ -1,0 +1,197 @@
+\documentclass[letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{placeins}
+\usepackage{tabularx}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{comment}
+\usepackage{geometry}
+\usepackage{layout}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{import}
+\usepackage{array}
+\usepackage{siunitx}%
+\usepackage{makecell}
+\usepackage{cellspace}
+\usepackage{longtable}
+\usepackage{graphicx}
+
+\input{variablesMain.tex}
+
+
+\geometry{letterpaper, left=30mm, right=30mm, bottom=35mm, top=55mm, tmargin=55mm, headheight=55mm}
+% hmargin=30mm, vmargin=30mm, left=30mm, right=30mm, tmargin=25mm, bmargin=25mm, bottom=35mm, top=50mm, headsep=35mm
+
+
+\pagestyle{fancy}
+\fancyhf{}
+%%%  HEADER  %%%
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash }b{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash }b{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash }b{#1}}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+
+
+\renewcommand{\headrulewidth}{0pt}
+\chead{
+\begingroup
+    \setlength{\tabcolsep}{8pt} % 6pt init
+    \renewcommand{\arraystretch}{1.5} % 1 init
+    \begin{tabular}{|L{25mm}|L{25mm}|L{25mm}|L{25mm}|P{25mm}|}
+     \hline
+         \multirow{3}*{\includegraphics[scale=0.23]{logoPhyto.jpg}}
+         &
+         \multicolumn{3}{c|}{\Large Rapport de Validation - \PCMATNAME}
+         &
+         \multirow{3}*{Page \thepage/\pageref{LastPage}}\\[5mm]
+     \cline{2-4} %dessin ligne de la col i à j
+         &
+         Numéro: \scriptsize\NUM
+         &
+         Version: \scriptsize\VERS
+         &
+         Expire: \scriptsize\EXP
+         &\\[1.5mm]
+    \hline
+    \end{tabular}
+\endgroup
+}
+%%%  FOOTER  %%%
+\renewcommand{\footrulewidth}{1pt}
+\fancyfoot[C]{\raggedright© PhytoChemia Tous droits réservés. Ce document ne peut être reproduit sans autorisation. Toute copie physique doit être vérifiée en consultant la version courante dans PC-GEN-001-F2, version à jour, avant usage, et doit être détruite après usage. Les copies physiques sont considérées comme des documents non contrôlés.}
+
+
+%%%  DOCUMENT  %%%
+\begin{document}
+
+%%%  PAGE DE TITRES  %%%
+\centering
+\textsc{\huge VALEXA}\\
+\vspace{10mm}
+\textsc{\LARGE Rapport de Validation}\\
+\vspace{10mm}
+{\huge \PCMATNAME}\\
+\smallskip
+\textbf{Conformément aux exigences de la norme ISO 17025:2017}\\
+\vspace{10mm}
+{Rapport généré le \today}\\
+{Par \AUTEUR}\\
+\vspace{10mm}
+\textbf{HISTORIQUE DES MODIFICATIONS}\vspace{5mm}
+\begingroup
+    \setlength{\tabcolsep}{10pt} % 6pt init
+    \renewcommand{\arraystretch}{2.5} % 1 init
+    \begin{tabular}{|c|c|c|}
+        \hline
+        \textit{\textbf{AUTEUR}}
+         &
+         \textit{\textbf{OBJET DE LA REVISION}}
+         &
+         \textit{\textbf{VERSION}}\\[2mm]
+         \hline
+         TODO
+         &
+         TODO
+         &
+         TODO\\[2mm]
+         \hline
+    \end{tabular}\\
+\endgroup
+\vspace{10mm}
+\textit{Les brouillons et les versions archivées ou obsolètes ne doivent pas être utilisés.
+Se référer à PC-FOR-001-DOC Maîtrise des documents et enregistrements
+pour identifier la version en vigueur.}
+\newpage
+%%%  TABLE DES MATIERES  %%%
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+\subsection{Validité}
+Ce rapport est automatiquement généré par Valexa. Lors de la génération de ce rapport les calculs ont été automatiquement validés en les comparants aux données retrouvé dans les articles suivant avec succès:\par
+\begin{itemize}
+\item Article 1
+\item Article 2
+\end{itemize}
+La validation à été accepté par l'utilisateur le 2020-07-31 à 18h02. Pour plus de détail sur la méthode de validation, veuillez vous référer au code de Valexa disponible à l'addresse suivante: xxxxxx.xxxxxxx.xxxxx.xxxxx.xxxx
+
+\subsection{Profil d'exactitude}
+Les profils d'exactitude appliqué dans ce rapport sont généré selon les méthodes décrites dans l'article de XXXXXX: Xxxxxxxxxxxxxxxx XXXXXXXXXXXXXXXXXxxxxxxxxxx (2007). Les termes utilisés sont les suivants:
+\begin{itemize}
+    \item \textbf{Modèle}: Nom et équation général utilisé pour faire la concordance entre les résultats mesurés et les résultats attendue. Par exemple, un modèle linéaire avec une équation \( y = mx + b \).
+    \item \textbf{Tolérance}: Pourcentage correspondant à la certitude de l'intervalle de tolérance (basé sur les valeurs de Students). Par exemple, une tolérance de 90\% signifie que 90\% des valeurs futures se trouverons entre le maximum et le minimum prévue par l'intervale de tolérance.
+    \item \textbf{Intervale de Tolérance}: Zone dans laquel nous établissons qu'un pourcentage dicté de valeur tomberont. Par exemple, une intervale de tolérance de \(\pm5\%\) avec une tolérance de 90\% signifie que 90\% des valeurs seront entre \(\pm10\%\) de la valeur réelle.
+    \item \textbf{Limite d'Acceptance}: Limite, absolue ou relative, à laquelle nous déterminons que le résultats est valide. Par exemple, avec une tolérance de \(\pm10\%\) nous accepterons que la méthode est valide lorsque les intervales de tolérances sont inférieur à cette valeur.
+    \item \textbf{Limite de Quantification (LOQ)}: Limite à laquel l'intervale de tolérance croise la limite d'acceptance. Cette limite peut être haute \((LOQ_{max})\) ou basse \((LOQ_{min})\).
+    \item \textbf{Limite de Détection (LOD)}: Limite à laquel nous considérons que la concentration est trop incertaine pour émettre un jugement valable. Cette limite est calculé selon la formule suivante:
+    \[ LOD = \frac{LOQ_{min}}{3} \]
+    \item \textbf{Plage de Validité}: Limite inférieur et supérieur auquel la méthode est considéré valide. Cette plage ne pourra jamais dépassé les niveaux de concentration inférieur et supérieur utilisés pour la validation.
+    \item \textbf{Facteur de Correction (Corr. Factor)}: Si applicable, facteur avec lequel les résultats obtenues doivent être multipliés. Ce facteur est utilisé pour corriger des effets matrices potentiels. Valexa la calcul de la façon suivante:
+    \[Corr. Factor = \left (\frac{\sum_{i=1}^{n}\left (\frac{x_{i,calc}}{x_{i}}\right )}{n} \right )^{-1}\]
+    \item \textbf{Taux de récupération (Rec)}: Pourcentage moyen de concordance moyen avec la valeur théorique. Il est calculé de la façon suivante:
+    \[Rec = \frac{\sum_{i=1}^{n}\frac{x_{i, calc}-x_{i}}{x_{i}}\times100}{n} \]
+    il peut aussi être calculé par la formule suivante:
+    \[Rec = Corr.Factor^{-1}\times 100 \]
+    \item \textbf{Biais absolue}: Différence entre la valeur obtenue et la valeur attendue:
+    \[Biais_{abs} = x_{i,calc}-x_{i} \]
+    \item \textbf{Biais relatif}: Pourcentage de différence entre la valuer obtenue et la valeur attendue:
+    \[Biais_{rel} = \frac{x_{i,calc}}{x_{i}}*100 \]
+\end{itemize}
+
+\section{Plan expérimental}
+\subsection{Objectif}
+Ce document à pour but de valider la méthode PC-MAT-002 et d'en résumer les paramètres.
+\subsection{Variable évalué}
+Le tableau suivant liste les variables évalué pendant la validation:
+\begin{table}[h!]
+\centering
+\begin{tabular}{c|c|c}
+    \multirow{2}{*}{Série} & \multicolumn{2}{|c}{Variable} \\
+    \cline{2-3}
+     & Opérateur & Jour\\
+    \hline
+    \hline
+    1 & Patrice Rondeau & 1\\
+    2 & Patrice Rondeau & 2\\
+    3 & Dany Massé & 2\\
+\end{tabular}
+\caption{Liste des variables évaluées}
+\label{tab:1}
+\end{table}
+\subsection{Détails supplémentaire}
+Pour les calculs de validation, des sous-séquence de 5 points de concentration consécutifs ont été utilisé pour déterminer les paramètres de chacun des composants. Les cibles de calculs ont été effectué avec un intervalle de confiance de 80\% et un écart-type de 50\%, sauf lorsque qu’indiqué autrement. L’écart-type est basé sur les valeur estimés de la Trompette de Horwitz (\url{https://www.aoac.org/aoac_prod_imis/AOAC_Docs/StandardsDevelopment/SLV_Guidelines_Dietary_Supplements.pdf}) ainsi que la méthode fournis par Santé Canada (PMRA-LS-Method-006v1.3).
+
+Les limites de quantification ont été sélectionnées en fonction des valeurs de croisement ou pour optimiser la limite de quantification maximale lorsque la limite de quantification était proche d’une catégorie supérieure.
+\section{Validation}
+\subsection{Résultats}
+Le tableau suivant résume les résultats obtenues durant la validation:\\
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{m{7em}|m{4em}|m{4em}|m{4em}|m{4em}|m{4em}|m{4em}|m{4em}}
+        \textbf{Composé} & \textbf{Tol.} & \textbf{Accep.} & \textbf{LOD} & \(\mathbf{LOQ_{min}}\) & \(\mathbf{LOQ_{max}}\) & \textbf{Corr.} & \textbf{Rec} \\
+        \hline
+        Abamectin Très long composé & 80 & 50 & 0.1 & 0.1 & 0.1 & 1 & 100
+    \end{tabular}
+    \caption{Résumé des principaux paramètres de validations}
+    \label{tab:2}
+\end{table}
+\FloatBarrier
+Pour plus de détails, veuillez référer à la section dédiée au composé.
+\newpage
+\subsection{Profiles}
+
+\input{ListParagraphsProfile.tex}
+
+\newpage
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}

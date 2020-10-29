@@ -5,6 +5,7 @@ import ProfileView from "../views/ProfileView";
 import DataView from "../views/DataView";
 import LoadingView from "../views/LoadingView";
 import SettingsView from "../views/SettingsView";
+import ReportView from "../views/ReportView";
 
 Vue.use(VueRouter)
 
@@ -28,6 +29,11 @@ Vue.use(VueRouter)
     path: '/settings',
     name: 'settings',
     component: SettingsView
+  },
+  {
+    path: '/report',
+    name: 'report',
+    component: ReportView
   }
 ]
 
