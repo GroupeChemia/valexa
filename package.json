@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "node_modules/.bin/vue-cli-service serve",
-    "build": "node_modules/.bin/vue-cli-service build",
-    "lint": "node_modules/.bin/vue-cli-service lint",
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
     "electron:build": "vue-cli-service electron:build",
     "electron:serve": "vue-cli-service electron:serve",
     "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(js|vue)' --locales './src/locales/**/*.json'",
-    "postinstall": "node_modules/.bin/electron-builder install-app-deps",
-    "postuninstall": "node_modules/.bin/electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "postuninstall": "electron-builder install-app-deps"
   },
   "main": "background.js",
   "dependencies": {

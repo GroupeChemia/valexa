@@ -1,5 +1,6 @@
 import sigfig as sf
 import pandas as pd
+import math
 
 
 def get_value_between(
@@ -50,6 +51,10 @@ def format_json_to_data(data):
 
 
 def roundsf(data, sigfig):
+    if data == None or data == '':
+        return data
+    if math.isnan(data):
+        return data
     if sigfig > 0:
         if type(data).__module__ == "numpy":
             return sf.round(data.item(), sigfig)

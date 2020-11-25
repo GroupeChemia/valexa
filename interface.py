@@ -42,8 +42,8 @@ def main(arguments):
                     exit(0)
                 parsed_stream_data = loads(in_stream_data)  ## dict: profiles + typeReport
 
-
                 if "word" or "pdf" or "all" in parsed_stream_data['typeReport']:
+
                     for f in os.listdir('filesReport/profiles'):  # vide dossier
                         os.remove("filesReport/profiles/" + f)
                     open('filesReport/RapportValidation.docx', 'w').close()  # vide file

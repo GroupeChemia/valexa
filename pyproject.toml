@@ -18,6 +18,10 @@ nodeenv = "^1.4.0"
 sigfig = "^1.1.8"
 docstring-parser = "^0.7.1"
 plotly = "^4.9.0"
+kaleido = "^0.0.3"
+python-docx = "^0.8.10"
+pywin32 = "^300"
+pylatex = "^1.4.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.2"
