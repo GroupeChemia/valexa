@@ -26,12 +26,20 @@
                         "moreModel": " others models",
                         "selectTrue": "Yes",
                         "selectFalse": "No"
-                    }
+                    },
+                    "data": {
+                        "useMedian": "Use median",
+                        "applyTransformation": "Transform data",
+                        "selectTrue": "Yes",
+                        "selectFalse": "No"
+                      }
                 },
                 "general": {
                     "moreCompounds": " others compounds"
                 },
                 "profile": {
+                  "selectTrue": "Yes",
+                  "selectFalse": "No"
                 }
             }
         },
@@ -61,12 +69,20 @@
                         "moreModel": " autres modèles",
                         "selectTrue": "Oui",
                         "selectFalse": "Non"
+                    },
+                    "data": {
+                        "useMedian": "Utiliser la médiane",
+                        "applyTransformation": "Transformer les données",
+                        "selectTrue": "Yes",
+                        "selectFalse": "No"
                     }
                 },
                 "general": {
                     "moreCompounds": " autres composés"
                 },
                 "profile": {
+                    "selectTrue": "Yes",
+                    "selectFalse": "No"
                 }
             }
         }

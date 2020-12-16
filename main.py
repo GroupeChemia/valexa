@@ -124,19 +124,19 @@ def main():
     data = dataset
 
 
-    config = {
-        "compound_name": "Test",
-        "rolling_data": False,
-        "optimizer_parameter": optimizer_parameter,
-        "correction_allow": True,
-        "model_to_test": ['Linear'],
-        "data": data,
-        "rolling_limit": 3,
-        "significant_figure": 4,
-    }
+    # config = {
+    #     "compound_name": "Test",
+    #     "rolling_data": False,
+    #     "optimizer_parameter": optimizer_parameter,
+    #     "correction_allow": True,
+    #     "model_to_test": ['Linear'],
+    #     "data": data,
+    #     "rolling_limit": 3,
+    #     "significant_figure": 4,
+    # }
 
-    # config = json.loads('{"compound_name":"template","data":{"validation":[{"series":1,"level":1,"x":1.9,"y1":36539,"y2":36785,"$id":"72328206-0000000"},{"series":1,"level":2,"x":4.7,"y1":102066,"y2":98495,"$id":"72328206-0000001"},{"series":1,"level":3,"x":9.5,"y1":188665,"y2":191294,"$id":"72328206-0000002"},{"series":1,"level":4,"x":28.5,"y1":595999,"y2":604704,"$id":"72328206-0000003"},{"series":2,"level":1,"x":1.9,"y1":60086,"y2":35295,"$id":"72328206-0000004"},{"series":2,"level":2,"x":4.7,"y1":99897,"y2":93547,"$id":"72328206-0000005"},{"series":2,"level":3,"x":9.5,"y1":188657,"y2":198683,"$id":"72328206-0000006"},{"series":2,"level":4,"x":28.5,"y1":520857,"y2":501025,"$id":"72328206-0000007"},{"series":3,"level":1,"x":1.9,"y1":57695,"y2":59731,"$id":"72328206-0000008"},{"series":3,"level":2,"x":4.7,"y1":115298,"y2":111584,"$id":"72328206-0000009"},{"series":3,"level":3,"x":9.5,"y1":221678,"y2":194983,"$id":"72328206-0000010"},{"series":3,"level":4,"x":28.5,"y1":557258,"y2":541355,"$id":"72328206-0000011"}]},"tolerance_limit":80,"acceptance_limit":20,"acceptance_absolute":false,"quantity_units":null,"rolling_data":false,"rolling_limit":3,"model_to_test":"Linear","correction_allow":false,"correction_threshold":[0.9,1.1],"correction_forced_value":null,"correction_round_to":2,"optimizer_parameter":null,"significant_figure":4,"lod_allowed":null,"lod_force_miller":false,"status":""}')
-    # config['data'] = vx.format_json_to_data(config['data'])
+    config = json.loads('{"compound_name":"Validation Mycotoxines-B1-75ul-transition313.1-241.1 (1)","data":{"validation":[{"series":1,"level":1,"x1":0.008,"y1":194,"y2":195,"y3":210},{"series":2,"level":1,"x1":0.008,"y1":224,"y2":241,"y3":273},{"series":3,"level":1,"x1":0.005,"y1":264,"y2":258,"y3":225},{"series":1,"level":2,"x1":0.016,"y1":408,"y2":425,"y3":416},{"series":2,"level":2,"x1":0.016,"y1":414,"y2":429,"y3":400},{"series":3,"level":2,"x1":0.008,"y1":376,"y2":373,"y3":313},{"series":1,"level":3,"x1":0.2,"y1":2203,"y2":2080,"y3":214},{"series":2,"level":3,"x1":0.2,"y1":2495,"y2":2454,"y3":2408},{"series":3,"level":3,"x1":0.01,"y1":424,"y2":411,"y3":470}],"calibration":[{"series":1,"level":1,"x1":0.008,"y1":140},{"series":1,"level":2,"x1":0.016,"y1":178},{"series":1,"level":3,"x1":0.12,"y1":1516},{"series":1,"level":4,"x1":0.2,"y1":2766},{"series":1,"level":5,"x1":0.3,"y1":3701},{"series":1,"level":6,"x1":0.4,"y1":5639},{"series":2,"level":1,"x1":0.008,"y1":101},{"series":2,"level":2,"x1":0.016,"y1":226},{"series":2,"level":3,"x1":0.12,"y1":1608},{"series":2,"level":4,"x1":0.2,"y1":2915},{"series":2,"level":5,"x1":0.3,"y1":4119},{"series":2,"level":6,"x1":0.4,"y1":5481},{"series":3,"level":1,"x1":0.005,"y1":260},{"series":3,"level":2,"x1":0.008,"y1":368},{"series":3,"level":3,"x1":0.01,"y1":454},{"series":3,"level":4,"x1":0.02,"y1":1011},{"series":3,"level":5,"x1":0.056,"y1":2400},{"series":3,"level":6,"x1":0.08,"y1":3739}]},"tolerance_limit":80,"acceptance_limit":20,"acceptance_absolute":false,"quantity_units":null,"rolling_data":false,"rolling_limit":3,"model_to_test":["Linear","Quadratic"],"correction_allow":false,"correction_threshold":[0.9,1.1],"correction_forced_value":null,"correction_round_to":2,"optimizer_parameter":null,"significant_figure":4,"lod_allowed":null,"lod_force_miller":false,"data_transformation":null,"use_median":false,"status":""}')
+    config['data'] = vx.format_json_to_data(config['data'])
     # config['correction_allow'] = True
     # config['correction_forced_value'] = None
     # config['acceptance_absolute'] = True

@@ -28,27 +28,22 @@ def test_feinberg_coli():
     tolerance interval obtained stays the same since Valexa add this factor in the calculation of the tolerance standard
     deviation instead of the calculation of the coverage factor as found in the article. In the same way, the sFI needs
     to be divided by the same equation.
-    The reference DataFrame is as follow:
-
     """
     data = sample_dataset.dataset("feinberg_coli")
 
-    data["Validation"]["x"] = np.log10(data["Validation"]["x"])
-    data["Validation"]["y"] = np.log10(data["Validation"]["y"])
-    for level in data["Validation"]["Level"].unique():
-        data["Validation"].loc[data["Validation"]["Level"] == level, "x"] = np.median(
-            data["Validation"][data["Validation"]["Level"] == level]["x"]
-        )
-
     profiles: ProfileManager = ProfileManager(
-        "Test", data, acceptance_absolute=True, acceptance_limit=0.3,
+        "Test", data, acceptance_absolute=True, acceptance_limit=0.3, data_transformation="log10", use_median=True
     )
     profiles.make_profiles()
 
+    data = sample_dataset.dataset("feinberg_coli")
+
     profiles_with_more_acceptance: ProfileManager = ProfileManager(
-        "Test", data, acceptance_absolute=True, acceptance_limit=0.4,
+        "Test", data, acceptance_absolute=True, acceptance_limit=0.4, data_transformation="log10", use_median=True
     )
     profiles_with_more_acceptance.make_profiles()
+
+    data = sample_dataset.dataset("feinberg_coli")
 
     profiles_with_correction: ProfileManager = ProfileManager(
         "Test",
@@ -56,6 +51,8 @@ def test_feinberg_coli():
         acceptance_absolute=True,
         correction_allow=True,
         correction_threshold=[1, 1],
+        data_transformation="log10",
+        use_median=True
     )
     profiles_with_correction.make_profiles()
 

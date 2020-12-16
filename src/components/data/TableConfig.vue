@@ -39,6 +39,17 @@
                 <v-col>
                     <v-text-field
                             outlined
+                            :label="languageText.lblX"
+                            rounded
+                            dense
+                            v-model.number="numberOfX"
+                            type="number"
+                    >
+                    </v-text-field>
+                </v-col>
+                <v-col>
+                    <v-text-field
+                            outlined
                             :label="languageText.lblSupp"
                             rounded
                             dense
@@ -53,6 +64,7 @@
                     :number-of-level="getTableConfig({compound: compound, dataType: dataType}).numberOfLevel"
                     :number-of-rep="getTableConfig({compound: compound, dataType: dataType}).numberOfRep"
                     :number-of-supp="getTableConfig({compound: compound, dataType: dataType}).numberOfSupp"
+                    :number-of-x="getTableConfig({compound: compound, dataType: dataType}).numberOfX"
                     :data-type="dataType"
                     :compound="compound"
                     :key="componentKey"
@@ -101,7 +113,8 @@
             numberOfLevel: 0,
             numberOfSeries: 0,
             numberOfRep: 0,
-            numberOfSupp: 0
+            numberOfSupp: 0,
+            numberOfX: 0
 
         }),
         mounted: function () {
@@ -109,6 +122,7 @@
             this.numberOfSeries = this.getTableConfig({compound: this.compound, dataType: this.dataType}).numberOfSeries
             this.numberOfRep = this.getTableConfig({compound: this.compound, dataType: this.dataType}).numberOfRep
             this.numberOfSupp = this.getTableConfig({compound: this.compound, dataType: this.dataType}).numberOfSupp
+            this.numberOfX = this.getTableConfig({compound: this.compound, dataType: this.dataType}).numberOfX
         },
         methods: {
             ...mapMutations([
@@ -123,7 +137,8 @@
                         numberOfLevel: this.numberOfLevel,
                         numberOfSeries: this.numberOfSeries,
                         numberOfRep: this.numberOfRep,
-                        numberOfSupp: this.numberOfSupp
+                        numberOfSupp: this.numberOfSupp,
+                        numberOfX: this.numberOfX
                     }
                 }
                 this.setTableConfig(data)

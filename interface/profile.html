@@ -20,6 +20,7 @@
         profilerName,
         () => {
             loadBalancer.onReceiveData(ipcRenderer, profilerName, args => {
+                ipcRenderer.send("GEN_MESSAGE", JSON.stringify(args.data))
                 pyshell.send(JSON.stringify(args.data));
             });
 
@@ -42,6 +43,7 @@
                         ipcRenderer.send("PROFILER_WORKER_ERROR", profilerName)
                         console.log(e)
                         console.log(message)
+                        pyshell.terminate()
                     }
                 }
             })

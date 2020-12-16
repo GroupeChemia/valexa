@@ -16,28 +16,52 @@ def get_value_between(
 def format_json_to_data(data):
     validation = pd.DataFrame(data["validation"])
     ys = [col for col in validation.columns if col[0] == "y"]
+    xs = [col for col in validation.columns if col[0] == "x"]
     validation_dataframe = pd.DataFrame()
-    for y in ys:
-        columns_name = {"series": "Series", "level": "Level", "x": "x", y: "y"}
-        temp_dataframe = validation[["series", "level", "x", y]].rename(
-            columns=columns_name
-        )
-        validation_dataframe = pd.concat(
-            [validation_dataframe, temp_dataframe], ignore_index=True
-        )
+    if len(ys) > len(xs):
+        for y in ys:
+            columns_name = {"series": "Series", "level": "Level", "x1": "x", y: "y"}
+            temp_dataframe = validation[["series", "level", "x1", y]].rename(
+                columns=columns_name
+            )
+            validation_dataframe = pd.concat(
+                [validation_dataframe, temp_dataframe], ignore_index=True
+            )
+    else:
+        for x in range(1, len(xs)+1):
+            columns_name = {"series": "Series", "level": "Level", "x" + str(x): "x", "y" + str(x): "y"}
+            temp_dataframe = validation[["series", "level", "x" + str(x), "y" + str(x)]].rename(
+                columns=columns_name
+            )
+            validation_dataframe = pd.concat(
+                [validation_dataframe, temp_dataframe], ignore_index=True
+            )
+
 
     if "calibration" in data:
         calibration = pd.DataFrame(data["calibration"])
         ys = [col for col in calibration.columns if col[0] == "y"]
+        xs = [col for col in calibration.columns if col[0] == "x"]
         calibration_dataframe = pd.DataFrame()
-        for y in ys:
-            columns_name = {"series": "Series", "level": "Level", "x": "x", y: "y"}
-            temp_dataframe = calibration[["series", "level", "x", y]].rename(
-                columns=columns_name
-            )
-            calibration_dataframe = pd.concat(
-                [calibration_dataframe, temp_dataframe], ignore_index=True
-            )
+        if len(ys) > len(xs):
+            for y in ys:
+                columns_name = {"series": "Series", "level": "Level", "x1": "x", y: "y"}
+                temp_dataframe = calibration[["series", "level", "x1", y]].rename(
+                    columns=columns_name
+                )
+                calibration_dataframe = pd.concat(
+                    [calibration_dataframe, temp_dataframe], ignore_index=True
+                )
+
+        else:
+            for x in range(1, len(xs)+1):
+                columns_name = {"series": "Series", "level": "Level", "x" + str(x): "x", "y" + str(x): "y"}
+                temp_dataframe = validation[["series", "level", "x" + str(x), "y" + str(x)]].rename(
+                    columns=columns_name
+                )
+                calibration_dataframe = pd.concat(
+                    [calibration_dataframe, temp_dataframe], ignore_index=True
+                )
 
         return {
             "Validation": validation_dataframe,

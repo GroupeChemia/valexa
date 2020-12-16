@@ -3,12 +3,18 @@
         <vue-excel-editor no-header-edit v-model="tableData" @update="updateData" no-paging>
             <vue-excel-column field="series" :label="languageText['series']" type="number"/>
             <vue-excel-column field="level" :label="languageText['level']" type="number"/>
-            <vue-excel-column field="x" :label="languageText['x']" type="number"/>
+            <vue-excel-column
+                    v-for="xrep in this.numberOfX"
+                    :field="'x' + xrep"
+                    :label="languageText['x'] + xrep"
+                    :key="'x' + xrep"
+                    type="number"
+            />
             <vue-excel-column
                     v-for="rep in this.numberOfRep"
                     :field="'y' + rep"
                     :label="languageText['y'] + rep"
-                    :key="rep"
+                    :key="'y' + rep"
                     type="number"
             />
         </vue-excel-editor>
@@ -24,6 +30,7 @@
             numberOfSeries: [Number, String],
             numberOfLevel: [Number, String],
             numberOfRep: [Number, String],
+            numberOfX: [Number, String],
             numberOfSupp: [Number],
             dataType: String,
             languageText: Object,
@@ -73,7 +80,9 @@
                                 series: foundRow.series,
                                 level: foundRow.level
                             }
-                            if (typeof foundRow.x !== 'undefined') {tempRow.x = foundRow.x}
+                            for (var xrep = 1; xrep <= this.numberOfX; xrep++) {
+                                if (typeof foundRow['x' + xrep] !== 'undefined') {tempRow['x' + xrep] = foundRow['x' + xrep]}
+                            }
                             for (var rep = 1; rep <= this.numberOfRep; rep++) {
                                 if (typeof foundRow['y' + rep] !== 'undefined') {tempRow['y' + rep] = foundRow['y' + rep]}
                             }

@@ -35,6 +35,7 @@
                 loadBalancer.sendData(ipcRenderer, worker, {
                     data: this.profileToTest[profileNumber]
                 });
+                console.log(JSON.stringify(this.profileToTest[profileNumber]))
                 this.setProfilerWorkerState({worker: worker, status: 'running', workingOn: profileNumber})
                 this.increaseProfilerListLocation()
             },

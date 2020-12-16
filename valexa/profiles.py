@@ -42,6 +42,8 @@ class ProfileManager:
         significant_figure: int = 4,
         lod_allowed: Optional[list] = None,
         lod_force_miller: bool = False,
+        data_transformation: Optional[str] = None,
+        use_median: bool = False,
         **_
     ):
         """
@@ -81,6 +83,10 @@ class ProfileManager:
         regression standard deviation (Miller & Miller, 2010), if set to None, it will try both, defaults to None
         :param bool? lod_force_miller: Force the use of Miller & Miller calculation method for the LOD determination,
         defaults to False
+        :param str? data_transformation: Apply transformation to data, currently the option are None or "log10",
+        defaults to None
+        :param bool? use_median: Use median instead of mean for level target, defaults to False
+
         """
         self.compound_name: str = compound_name
         self.quantity_units: str = quantity_units if quantity_units is not None else 'No Units'
@@ -123,6 +129,9 @@ class ProfileManager:
         if "Calibration" in self.data:
             self.model_manager: models.ModelsManager = models.ModelsManager()
             self.model_manager.initialize_models(self.model_to_test)
+
+        self.data_transformation: Optional[str] = data_transformation
+        self.use_median: Optional[bool] = use_median
 
         self.data_objects: List[DataObject] = self.__get_dataobject
         self.profiles: Optional[Dict[str, Profile]] = None
@@ -300,7 +309,8 @@ class ProfileManager:
                     self.lod_allowed,
                     self.lod_force_miller,
                     self.compound_name,
-                    self.quantity_units
+                    self.quantity_units,
+                    self.use_median
                 )
                 current_profile.calculate(self.stats_limits)
 
@@ -331,6 +341,7 @@ class ProfileManager:
                         DataObject(
                             validation_dict[validation_key],
                             calibration_dict[calibration_key],
+                            self.data_transformation
                         )
                     )
 
@@ -343,7 +354,12 @@ class ProfileManager:
                 validation_dict["All"] = self.data["Validation"]
 
             for validation_key in validation_dict.keys():
-                data_to_model.append(DataObject(validation_dict[validation_key]))
+                data_to_model.append(
+                    DataObject(
+                        validation_dict[validation_key],
+                        data_transformation=self.data_transformation
+                    )
+                )
                 data_to_model[-1].add_value(data_to_model[-1].data_y(), "x_calc")
 
         # data_to_model = self.__sanitize_data_to_model(data_to_model)
@@ -395,8 +411,10 @@ class ProfileLevel:
         level_data: pd.DataFrame,
         absolute_acceptance: bool = False,
         sigfig: int = 4,
+        use_median: bool = False
     ):
         self.data: pd.DataFrame = level_data
+        self.use_median: bool = use_median
         self.sigfig: int = sigfig
         self.introduced_concentration: Optional[np.float] = None
         self.calculated_concentration: Optional[np.float] = None
@@ -439,7 +457,11 @@ class ProfileLevel:
         self.nb_measures = len(self.data.index)
         self.nb_rep = self.nb_measures / self.nb_series
 
-        self.introduced_concentration = roundsf(self.data["x"].mean(), self.sigfig)
+        if self.use_median:
+            self.introduced_concentration = roundsf(self.data["x"].median(), self.sigfig)
+        else:
+            self.introduced_concentration = roundsf(self.data["x"].mean(), self.sigfig)
+
         self.calculated_concentration = roundsf(self.data["x_calc"].mean(), self.sigfig)
         self.acceptance_limits_abs = self.get_acceptance_limits_abs(
             acceptance_limit
@@ -762,7 +784,8 @@ class Profile:
         lod_allowed: list = None,
         lod_force_miller: bool = False,
         compound: str= None,
-        units: str = None
+        units: str = None,
+        use_median: bool = False
     ):
         if lod_allowed is None:
             lod_allowed = ["LOQ/3.3", "Miller"]
@@ -790,13 +813,14 @@ class Profile:
         self.lod_allowed = lod_allowed
         self.lod_force_miller = lod_force_miller
         self.lod_type: Optional[str] = None
+        self.use_median: bool = use_median
         if self.correction_allowed:
             self.generate_correction()
         self.calculate_bias()
         self.profile_levels: Dict[ProfileLevel] = {}
         for level in self.model.list_of_levels("validation"):
             self.profile_levels[level] = ProfileLevel(
-                self.model.get_level(level), self.absolute_acceptance, self.sigfig
+                self.model.get_level(level), self.absolute_acceptance, self.sigfig, self.use_median
             )
         self.graphs: dict = {}
         self.linearity: dict = {}

@@ -6,6 +6,8 @@ from docx import Document
 from docx.shared import Mm
 import shutil
 import win32com.client as client
+import time
+from valexa.helper import roundsf
 
 
 
@@ -178,15 +180,15 @@ def generateProfile(docObj, **data):
               [
                   [str(item['Series']) for item in data['validation_data']],
                   [str(item['Level']) for item in data['validation_data']],
-                  [str(item['x']) for item in data['validation_data']],
-                  [str(item['y']) for item in data['validation_data']],
-                  [str(item['x_calc']) for item in data['validation_data']],
+                  [str(roundsf(item['x'],4)) for item in data['validation_data']],
+                  [str(roundsf(item['y'],4)) for item in data['validation_data']],
+                  [str(roundsf(item['x_calc'],4)) for item in data['validation_data']],
                   [str(item['bias_abs']) for item in data['validation_data']],
                   [str(item['bias_rel']) for item in data['validation_data']],
               ])
 
     ###  CALIBRATION REGRESSION  ###
-    if len(data['validation_data']) > 0:
+    if 'calibration_data' in data:
         generatePartCalibration(docObj, **data)
 
 
@@ -227,19 +229,16 @@ def generatePartCalibration(docObj, **data):
               [
                   [str(item['Series']) for item in data['calibration_data']],
                   [str(item['Level']) for item in data['calibration_data']],
-                  [str(item['x']) for item in data['calibration_data']],
-                  [str(item['y']) for item in data['calibration_data']],
+                  [str(roundsf(item['x'],4)) for item in data['calibration_data']],
+                  [str(roundsf(item['y'],4)) for item in data['calibration_data']],
               ])
-
-
-
 
 def downloadWord():
     """
     Download a .word file of the report in the "Downloads" directory of the PC user
     """
     dirDownloads = os.path.join(os.path.expanduser("~"), "Downloads")
-    shutil.copy("filesReport/RapportValidation.docx", dirDownloads + "/RapportValidation.docx")
+    shutil.copy("filesReport/RapportValidation.docx", dirDownloads + "/RapportValidation" + str(time.time()) + ".docx")
 
 def downloadPdf(isWord):
     """

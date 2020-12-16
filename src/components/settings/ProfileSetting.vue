@@ -27,6 +27,17 @@
                         persistent-hint
                         hint="Acceptance limits in percentage. This is the maximum accepted variation from the expected value."
                 />
+                <v-select
+                          :items="itemsTrueFalse"
+                          outlined
+                          rounded
+                          dense
+                          label="Acceptance Absolute"
+                          persistent-hint
+                          hint="The acceptance limit is absolute and not relative"
+                          menu-props="light"
+                          v-model="acceptanceAbsolute"
+                  />
             </v-card-text>
         </v-card>
     </v-col>
@@ -45,6 +56,12 @@
             ...mapGetters([
                 'getSettingsValue'
             ]),
+            itemsTrueFalse: function () {
+                return [
+                    this.languageText.selectTrue,
+                    this.languageText.selectFalse
+                ]
+            },
             toleranceLimit: {
                 get () {
                     return this.getSettingsValue({
@@ -74,12 +91,38 @@
                         value: value
                     })
                 }
-            }
+            },
+            acceptanceAbsolute: {
+                  get () {
+                      return this.convertTrueFalse(this.getSettingsValue({
+                          name:this.settingsName,
+                          setting: 'acceptance_absolute'
+                      }))
+                  },
+                  set (value) {
+                      this.setSettingsValue({
+                          name:this.settingsName,
+                          setting: 'acceptance_absolute',
+                          value: this.convertTrueFalse(value, true)
+                      })
+                  }
+              },
         },
         methods: {
             ...mapMutations([
                 'setSettingsValue'
-            ])
+            ]),
+            convertTrueFalse: function (value, toBool) {
+                  if (toBool) {
+                      return value === this.languageText.selectTrue;
+                  } else {
+                      if (value === true) {
+                          return this.languageText.selectTrue
+                      } else {
+                          return this.languageText.selectFalse
+                      }
+                  }
+              }
         }
     }
 </script>

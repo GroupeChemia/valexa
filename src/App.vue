@@ -69,7 +69,7 @@
     },
     mounted: function () {
       ipcRenderer.on("GEN_MESSAGE", (event, args) => {
-        //console.log(args)
+        console.log(args)
       })
     },
     data: () => ({

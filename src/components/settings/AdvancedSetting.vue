@@ -6,6 +6,9 @@
                         <v-expansion-panel-header>Advanced Setting</v-expansion-panel-header>
                         <v-expansion-panel-content>
                             <v-row dense>
+                                <DataSetting :language-text="languageText.data" :settings-name="settingsName"/>
+                            </v-row>
+                            <v-row dense>
                                 <CorrectionSetting :language-text="languageText.correction" :settings-name="settingsName"/>
                                 <ModelizationSetting :language-text="languageText.modelization" :settings-name="settingsName"/>
                             </v-row>
@@ -20,12 +23,14 @@
     import {mapGetters, mapMutations} from "vuex";
     import CorrectionSetting from "./CorrectionSetting";
     import ModelizationSetting from "./ModelizationSetting";
+    import DataSetting from "@/components/settings/DataSetting";
 
     export default {
         name: "AdvancedSetting",
         components: {
             CorrectionSetting,
-            ModelizationSetting
+            ModelizationSetting,
+            DataSetting
         },
         props: {
             languageText: Object,

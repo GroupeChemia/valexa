@@ -167,7 +167,10 @@ class Model:
             regression_intercept = 0
         miller_lod_y = regression_intercept + 3 * sqrt(fit.mse_resid)
         miller_lod = solveset(function(x) - miller_lod_y, x, S.Reals)
-        return list(miller_lod)[0]
+        if type(miller_lod) != EmptySet:
+            return list(miller_lod)[0]
+        else:
+            return None
 
     def __get_model_fit(
         self, series: Optional[int] = None

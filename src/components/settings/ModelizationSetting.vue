@@ -1,59 +1,59 @@
 <template>
     <v-col dense>
-                                    <v-card shaped light elevation="2">
-                                        <v-card-title>Modelization</v-card-title>
-                                        <v-card-text>
-                                        <v-select
-                                                :items="getAvailableModelsName"
-                                                outlined
-                                                rounded
-                                                dense
-                                                label="model_to_test"
-                                                multiple
-                                                menu-props="light, rounded"
-                                                v-model="modelToTest"
-                                                deletable-chips
-                                                small-chips
-                                                chips
-                                        >
-                                            <template v-slot:selection="{ item, index }">
-                                                <v-chip v-if="index <= 1" small>
-                                                      <span>{{ item }}</span>
-                                                </v-chip>
-                                                <span
-                                                      v-if="index === 2"
-                                                      class="grey--text caption"
-                                                >(+{{ modelToTest.length - 2 }} {{languageText.moreModel}})</span>
-                                          </template>
-                                        </v-select>
-                                        <v-select
-                                                :items="itemsTrueFalse"
-                                                outlined
-                                                rounded
-                                                dense
-                                                label="rolling_data"
-                                                persistent-hint
-                                                hint="This option will try to test every data iteration possibilty and generate multiple models. This may takes a while..."
-                                                menu-props="light, rounded"
-                                                v-model="rollingData"
-                                            />
-                                        <v-text-field
-                                                outlined
-                                                rounded
-                                                dense
-                                                label="rolling_limit"
-                                                v-model="rollingLimit"
-                                        />
-                                        <v-text-field
-                                                outlined
-                                                rounded
-                                                dense
-                                                label="significant_figure"
-                                                v-model="significantFigure"
-                                        />
-                                    </v-card-text>
-                                    </v-card>
-                                </v-col>
+        <v-card shaped light elevation="2">
+            <v-card-title>Modelization</v-card-title>
+            <v-card-text>
+            <v-select
+                    :items="getAvailableModelsName"
+                    outlined
+                    rounded
+                    dense
+                    label="model_to_test"
+                    multiple
+                    menu-props="light, rounded"
+                    v-model="modelToTest"
+                    deletable-chips
+                    small-chips
+                    chips
+            >
+                <template v-slot:selection="{ item, index }">
+                    <v-chip v-if="index <= 1" small>
+                          <span>{{ item }}</span>
+                    </v-chip>
+                    <span
+                          v-if="index === 2"
+                          class="grey--text caption"
+                    >(+{{ modelToTest.length - 2 }} {{languageText.moreModel}})</span>
+              </template>
+            </v-select>
+            <v-select
+                    :items="itemsTrueFalse"
+                    outlined
+                    rounded
+                    dense
+                    label="rolling_data"
+                    persistent-hint
+                    hint="This option will try to test every data iteration possibilty and generate multiple models. This may takes a while..."
+                    menu-props="light, rounded"
+                    v-model="rollingData"
+                />
+            <v-text-field
+                    outlined
+                    rounded
+                    dense
+                    label="rolling_limit"
+                    v-model="rollingLimit"
+            />
+            <v-text-field
+                    outlined
+                    rounded
+                    dense
+                    label="significant_figure"
+                    v-model="significantFigure"
+            />
+        </v-card-text>
+        </v-card>
+    </v-col>
 </template>
 
 <script>

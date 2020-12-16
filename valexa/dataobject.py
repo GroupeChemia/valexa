@@ -2,13 +2,20 @@ import pandas as pd
 import numpy as np
 
 from typing import Optional
+from warnings import warn
 
 
 class DataObject:
     def __init__(
-        self, validation_data: pd.DataFrame, calibration_data: pd.DataFrame = None
+        self, validation_data: pd.DataFrame,
+        calibration_data: pd.DataFrame = None,
+        data_transformation: Optional[str] = None
     ):
+        self.data_transformation: Optional[str] = data_transformation
+
         self.validation_data: pd.DataFrame = validation_data
+        if self.data_transformation:
+            self.validation_data = self.transform_data(self.validation_data, self.data_transformation)
         self.validation_first_level: int = min(self.validation_data["Level"].unique())
         self.validation_last_level: int = max(self.validation_data["Level"].unique())
         self.validation_levels: int = self.validation_data["Level"].nunique()
@@ -17,6 +24,8 @@ class DataObject:
 
         self.calibration_data: Optional[pd.DataFrame] = calibration_data
         if self.calibration_data is not None:
+            if self.data_transformation:
+                self.calibration_data = self.transform_data(self.calibration_data, self.data_transformation)
             self.calibration_first_level: int = min(
                 self.calibration_data["Level"].unique()
             )
@@ -28,6 +37,18 @@ class DataObject:
                 self.calibration_data["x"]
             )
             self.calibration_last_concentration: float = max(self.calibration_data["x"])
+
+    def transform_data(self, data: pd.DataFrame, transformation: str):
+        working_data = data
+        if transformation == "log10":
+            working_data ["x_orig"] = working_data ["x"]
+            working_data ["y_orig"] = working_data ["y"]
+            working_data ["x"] = np.log10(working_data ["x"])
+            working_data ["y"] = np.log10(working_data ["y"])
+            working_data.replace(-np.inf, 0, inplace=True)
+        else:
+            warn("Only log10 transformation is supported at the moment")
+        return working_data
 
     def add_calculated_value(self, calculated_value: pd.Series) -> None:
         calculated_value = calculated_value.to_frame("x_calc")

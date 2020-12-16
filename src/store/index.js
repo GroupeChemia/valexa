@@ -179,12 +179,14 @@ export default new Vuex.Store({
             numberOfLevel: 3,
             numberOfSeries: 3,
             numberOfRep: 3,
+            numberOfX: 1,
             numberOfSupp: 0
           },
           calibration: {
             numberOfLevel: 3,
             numberOfSeries: 3,
             numberOfRep: 3,
+            numberOfX: 1,
             numberOfSupp: 0
           }
         },
@@ -210,6 +212,7 @@ export default new Vuex.Store({
             numberOfLevel: 3,
             numberOfSeries: 3,
             numberOfRep: 3,
+            numberOfX: 1,
             numberOfSupp: 0
           })
       state.compounds[parameter.compound].hasCalibration = true
