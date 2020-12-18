@@ -8,6 +8,7 @@ import shutil
 import win32com.client as client
 import time
 from valexa.helper import roundsf
+from datetime import date
 
 
 
@@ -15,14 +16,15 @@ from valexa.helper import roundsf
 ###   MAIN   ###
 def generateWord(**listProfiles):
     doc = Document("filesReport/TemplateReport.docx")
+    version = str(date.today().year)[:-2] + chr(date.today().month + 64) + str(date.today().day)
 
     commands = {
-        "DATEGENERATIONdoc": "12/12/2020",
-        "AUTEURdoc": "Hubert MARCEAU",
-        "PCNAMEdoc": "PC-MAT-005",
-        "NUMEROdoc": "PC-MAT-005-VAL",
-        "VERSIONdoc": "20B10",
-        "EXPIRATIONdoc": "2021/02/10",
+        "DATEGENERATIONdoc": str(date.today()),
+        "AUTEURdoc": "[AUTEUR]",
+        "PCNAMEdoc": "PC-MAT-[###]",
+        "NUMEROdoc": "PC-MAT-[###]-VAL",
+        "VERSIONdoc": version,
+        "EXPIRATIONdoc": "[EXPIRATION]",
 
         "commandPROFILE": listProfiles
     }
@@ -97,6 +99,10 @@ def generateProfile(docObj, **data):
     createGraphs(id="figLINEARITY_" + idProfile,
                  data=data['graphs']['linearity']['data'],
                  layout=data['graphs']['linearity']['layout'])
+    if 'correction' in data['graphs']:
+        createGraphs(id="figCORRECTION_" + idProfile,
+                     data=data['graphs']['correction']['data'],
+                     layout=data['graphs']['correction']['layout'])
 
     docObj.add_heading('Composé ' + data['compound_name'], 2)
 
@@ -105,7 +111,7 @@ def generateProfile(docObj, **data):
     table = docObj.add_table(8, 2)
     table.style = 'Table Grid'
     fillTable(table, ["Parameter", "Value"], [
-        ["LOD", "LOQ Min", "LOQ Max", "Correction", "Average Recovery", "Tolerance", "Acceptance"],
+        ["LOD", "LOQ Min", "LOQ Max", "Correction", "Recouvrement Moyen", "Tolerance", "Acceptance"],
         [
             f"""{modelInfo['lod']} {modelInfo['units']} ({
                 "" if modelInfo['lod_type'] is None else modelInfo['lod_type']
@@ -113,12 +119,12 @@ def generateProfile(docObj, **data):
             f"{modelInfo['min_loq']} {modelInfo['units']}",
             f"{modelInfo['max_loq']} {modelInfo['units']}",
             f"""{
-                modelInfo['correction_factor'] ("", " (Forced)")[float(modelInfo['forced_correction_value'])>0] 
+                str(modelInfo['correction_factor']) + ("", " (Forced)")[modelInfo['forced_correction_value'] is not None] 
                 if modelInfo['has_correction'] else "---"
             }""",
             f"{modelInfo['average_recovery']}",
             f"{modelInfo['tolerance']} %",
-            f"""{modelInfo['acceptance']}% {"(Absolute)" if modelInfo['absolute_acceptance'] else "(Relative)"}""",
+            f"""{modelInfo['acceptance']} {"% (Absolute)" if modelInfo['absolute_acceptance'] else modelInfo['units'] + " (Relative)"}""",
         ]
     ])
     docObj.add_picture("filesReport/profiles/figPROFILE_" + idProfile + ".png", width=Mm(150))
@@ -128,7 +134,7 @@ def generateProfile(docObj, **data):
     table = docObj.add_table(len(data['levels_info'])+1, 8)
     table.style = 'Table Grid'
     fillTable(table,
-              ["Level", "Introduced Concentration", "Calculated Concentration", "Absolute Bias (%)", "Relative Bias (%)", "Recovery (%)", "Tolerance Absolute", "Tolerance Relative"],
+              ["Niveau", "Conc.", "Conc. Calc.", "Biais Abs. (%)", "Biais Rel. (%)", "Récupération (%)", "Abs. Tol.", "Rel. Tol."],
               [
                   [str(item) for item in list(range(len(data['levels_info'])))],
                   [str(item['introduced_concentration']) for item in data['levels_info']],
@@ -141,12 +147,12 @@ def generateProfile(docObj, **data):
               ])
 
     ###  PRECISION REPEATABILITY TABLE  ###
-    docObj.add_heading('Precision and Repeatability', 3)
+    docObj.add_heading('Précision et Répétabilité', 3)
     table = docObj.add_table(len(data['levels_info'])+1, 7)
     table.style = 'Table Grid'
     fillTable(table,
-              ["Level", "Introduced Concentration", "Absolute Intermediate Precision",
-               "Relative Intermediate Precision", "Absolute Repeatability", "Relative Repeatability", "Variance Ratio"],
+              ["Niveau", "Conc.", "Préc. Inter. Abs.",
+               "Préc. Inter. Rel.", "Rep. Abs.", "Rep. Rel.", "Ratio Var."],
               [
                   [str(item) for item in list(range(len(data['levels_info'])))],  # nb ligne tabular
                   [str(item['introduced_concentration']) for item in data['levels_info']],
@@ -156,12 +162,12 @@ def generateProfile(docObj, **data):
                   [str(item['repeatability_cv']) for item in data['repeatability_info']],
                   [str(item['ratio_var']) for item in data['misc_stats']]
               ])
-    ###  VALIDATION UNCERTAINTY  ###
-    docObj.add_heading('Validation Uncertainty', 3)
+    ###  UNCERTAINTY  ###
+    docObj.add_heading('Incertitude', 3)
     table = docObj.add_table(len(data['levels_info'])+1, 5)
     table.style = 'Table Grid'
     fillTable(table,
-              ["Level", "Introduced Concentration", "Calculated Concentration", "Absolute Expanded Uncertainty", "PC Expanded Uncertainty"],
+              ["Level", "Conc.", "Conc. Calc.", "Incert. Élargie Abs.", "Incert. Élargie. Rel. (%)"],
               [
                   [str(item) for item in list(range(len(data['levels_info'])))],  # nb ligne tabular
                   [str(item['introduced_concentration']) for item in data['levels_info']],
@@ -169,14 +175,46 @@ def generateProfile(docObj, **data):
                   [str(item['uncertainty_abs']) for item in data['uncertainty_info']],
                   [str(item['uncertainty_pc']) for item in data['uncertainty_info']]
               ])
+
+    ###  LINEARITY  ###
+    docObj.add_heading('Linearité', 3)
+    table = docObj.add_table(4, 2)
+    table.style = 'Table Grid'
+    fillTable(table,
+              ["Parameter", "Valeur"],
+              [
+                  ["Pente", "Ordonnée Origine", "R^2"],
+                  [
+                      str(data['linearity_info']['slope']['value']),
+                      str(data['linearity_info']['intercept']['value']),
+                      str(data['linearity_info']['rsquared']['value'])
+                  ]
+              ])
     docObj.add_picture("filesReport/profiles/figLINEARITY_" + idProfile + ".png", width=Mm(150))
 
+    if 'correction' in data['graphs']:
+        ###  LINEARITY W/O CORRECTION  ###
+        docObj.add_heading('Linearité sans Correction', 3)
+        table = docObj.add_table(4, 2)
+        table.style = 'Table Grid'
+        fillTable(table,
+                  ["Parameter", "Valeur"],
+                  [
+                      ["Pente", "Ordonnée Origine", "R^2"],
+                      [
+                          str(data['correction_info']['slope']['value']),
+                          str(data['correction_info']['intercept']['value']),
+                          str(data['correction_info']['rsquared']['value'])
+                      ]
+                  ])
+        docObj.add_picture("filesReport/profiles/figCORRECTION_" + idProfile + ".png", width=Mm(150))
+
     ###  VALIDATION TABLE  ###
-    docObj.add_heading('Validation', 3)
+    docObj.add_heading('Données de validation', 3)
     table = docObj.add_table(len(data['validation_data'])+1, 7)
     table.style = 'Table Grid'
     fillTable(table,
-              ["Serie", "Niveau", "Concentration", "Réponse", "Concentration Calculée", "Biais Absolu", "Biais Relatif"],
+              ["Serie", "Niveau", "Conc.", "Réponse", "Conc. Calc.", "Biais Abs.", "Biais Rel."],
               [
                   [str(item['Series']) for item in data['validation_data']],
                   [str(item['Level']) for item in data['validation_data']],
@@ -206,7 +244,7 @@ def generatePartCalibration(docObj, **data):
                  layout=data['graphs']['residuals_std']['layout'])
 
 
-    docObj.add_heading('Calibration regression', 3)
+    docObj.add_heading('Régression de calibration', 3)
     table = docObj.add_table(len(data['regression_info'])+1, 3)
     table.style = 'Table Grid'
     fillTable(table,
@@ -221,7 +259,7 @@ def generatePartCalibration(docObj, **data):
     docObj.add_picture("filesReport/profiles/figRESIDUALSstd_" + idProfile + ".png", width=Mm(150))
 
     ###  CALIBRATION TABLE  ###
-    docObj.add_heading('Calibration', 3)
+    docObj.add_heading('Données de calibration', 3)
     table = docObj.add_table(len(data['calibration_data'])+1, 4)
     table.style = 'Table Grid'
     fillTable(table,
