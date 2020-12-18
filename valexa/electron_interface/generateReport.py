@@ -107,7 +107,7 @@ def generateProfile(docObj, **data):
     docObj.add_heading('Composé ' + data['compound_name'], 2)
 
     ###   SUMMARY   ###
-    docObj.add_heading('Summary', 3)
+    docObj.add_heading('Résumé', 3)
     table = docObj.add_table(8, 2)
     table.style = 'Table Grid'
     fillTable(table, ["Parameter", "Value"], [
@@ -130,7 +130,7 @@ def generateProfile(docObj, **data):
     docObj.add_picture("filesReport/profiles/figPROFILE_" + idProfile + ".png", width=Mm(150))
 
     ###   TRUENESS   ###
-    docObj.add_heading('Trueness', 3)
+    docObj.add_heading('Justesse', 3)
     table = docObj.add_table(len(data['levels_info'])+1, 8)
     table.style = 'Table Grid'
     fillTable(table,
@@ -147,7 +147,7 @@ def generateProfile(docObj, **data):
               ])
 
     ###  PRECISION REPEATABILITY TABLE  ###
-    docObj.add_heading('Précision et Répétabilité', 3)
+    docObj.add_heading('Fidélité et Répétabilité', 3)
     table = docObj.add_table(len(data['levels_info'])+1, 7)
     table.style = 'Table Grid'
     fillTable(table,
