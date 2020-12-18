@@ -24,27 +24,28 @@ OptimizerParams = Dict[str, Union[str, bool]]
 
 class ProfileManager:
     def __init__(
-        self,
-        compound_name: str,
-        data: Dict[str, pd.DataFrame],
-        tolerance_limit: float = 80,
-        acceptance_limit: float = 20,
-        acceptance_absolute: bool = False,
-        quantity_units: str = None,
-        rolling_data: bool = False,
-        rolling_limit: Union[list, int] = 3,
-        model_to_test: Union[List[str], str] = None,
-        correction_allow: bool = False,
-        correction_threshold: Optional[List[float]] = None,
-        correction_forced_value: Optional[float] = None,
-        correction_round_to: int = 2,
-        optimizer_parameter: Optional[OptimizerParams] = None,
-        significant_figure: int = 4,
-        lod_allowed: Optional[list] = None,
-        lod_force_miller: bool = False,
-        data_transformation: Optional[str] = None,
-        use_median: bool = False,
-        **_
+            self,
+            compound_name: str,
+            data: Dict[str, pd.DataFrame],
+            tolerance_limit: float = 80,
+            acceptance_limit: float = 20,
+            acceptance_absolute: bool = False,
+            quantity_units: str = None,
+            rolling_data: bool = False,
+            rolling_limit: Union[list, int] = 3,
+            model_to_test: Union[List[str], str] = None,
+            correction_allow: bool = False,
+            correction_threshold: Optional[List[float]] = None,
+            correction_forced_value: Optional[float] = None,
+            correction_round_to: int = 2,
+            correction_type: Optional[str] = "slope",
+            optimizer_parameter: Optional[OptimizerParams] = None,
+            significant_figure: int = 4,
+            lod_allowed: Optional[list] = None,
+            lod_force_miller: bool = False,
+            data_transformation: Optional[str] = None,
+            use_median: bool = False,
+            **_
     ):
         """
         Init ProfileManager with the necessary dataset
@@ -73,6 +74,8 @@ class ProfileManager:
         :param float? correction_forced_value: If allow_correction is set to True, this will set the correction
         value to the indicated value instead of calculating it. Note: the value of the average recovery ratio must still
         be outside the threshold for this to take effect, defaults to None
+        :param str? correction_type: Set the type of correction to apply, if allowed, "slope" use the inverse of the
+        slope of the expected vs calculated plot, "average" will use use the average bias, defaults to "slope"
         :param int? correction_round_to: If allow_correction is set to True, the generated correction will be
         rounded to this number of significant figures, defaults to 2.
         :param dict? optimizer_parameter: These are the value used to sort the profile from best to worst when
@@ -124,6 +127,7 @@ class ProfileManager:
         else:
             self.correction_threshold: Optional[List[float]] = None
 
+        self.correction_type: str = correction_type
         self.optimizer_parameters: Optional[OptimizerParams] = optimizer_parameter
 
         if "Calibration" in self.data:
@@ -146,8 +150,8 @@ class ProfileManager:
             self.rolling_data_limit_calibration = rolling_data_limit
 
         if (
-            self.rolling_data_limit_validation
-            > self.data["Validation"]["Level"].nunique()
+                self.rolling_data_limit_validation
+                > self.data["Validation"]["Level"].nunique()
         ):
             warn(
                 "Minimum amount of data for Validation is "
@@ -160,8 +164,8 @@ class ProfileManager:
 
         if "Calibration" in self.data:
             if (
-                self.rolling_data_limit_calibration
-                > self.data["Calibration"]["Level"].nunique()
+                    self.rolling_data_limit_calibration
+                    > self.data["Calibration"]["Level"].nunique()
             ):
                 warn(
                     "Minimum amount of data for Validation is "
@@ -173,7 +177,7 @@ class ProfileManager:
                 ].nunique()
 
     def best(
-        self, type_of_model: Optional[str] = None, number: Optional[int] = None
+            self, type_of_model: Optional[str] = None, number: Optional[int] = None
     ) -> Optional[Profile]:
 
         if self.sorted_profiles is not None:
@@ -278,8 +282,8 @@ class ProfileManager:
         for data_object in self.data_objects:
             if "Calibration" in self.data:
                 if (
-                    data_object.calibration_levels
-                    >= self.model_manager.get_model_min_point(model_name)
+                        data_object.calibration_levels
+                        >= self.model_manager.get_model_min_point(model_name)
                 ):
                     data_to_model = self.model_manager.modelize(
                         model_name, data_object, self.sigfig
@@ -299,18 +303,19 @@ class ProfileManager:
 
             if data_to_model is not None:
                 current_profile: Profile = Profile(
-                    data_to_model,
-                    self.allow_correction,
-                    self.correction_threshold,
-                    self.forced_correction_value,
-                    self.absolute_acceptance,
-                    self.correction_round_to,
-                    self.sigfig,
-                    self.lod_allowed,
-                    self.lod_force_miller,
-                    self.compound_name,
-                    self.quantity_units,
-                    self.use_median
+                    model=data_to_model,
+                    correction_allowed=self.allow_correction,
+                    correction_type=self.correction_type,
+                    correction_threshold=self.correction_threshold,
+                    forced_correction_value=self.forced_correction_value,
+                    absolute_acceptance=self.absolute_acceptance,
+                    correction_round_to=self.correction_round_to,
+                    sigfig=self.sigfig,
+                    lod_allowed=self.lod_allowed,
+                    lod_force_miller=self.lod_force_miller,
+                    compound=self.compound_name,
+                    units=self.quantity_units,
+                    use_median=self.use_median
                 )
                 current_profile.calculate(self.stats_limits)
 
@@ -367,7 +372,7 @@ class ProfileManager:
         return data_to_model
 
     def __sliding_window_data(
-        self, data: pd.DataFrame, size_limit: int
+            self, data: pd.DataFrame, size_limit: int
     ) -> Dict[str, pd.DataFrame]:
         data_level: np.ndarray = data["Level"].unique()
         data_dict: Dict[str, pd.DataFrame] = dict()
@@ -378,22 +383,22 @@ class ProfileManager:
                 level_name: str = str(start_level) + "->" + str(end_level)
                 data_dict[level_name]: pd.DataFrame = data[
                     (data["Level"] >= start_level) & (data["Level"] <= end_level)
-                ]
+                    ]
                 data_dict[level_name].reset_index(drop=True, inplace=True)
 
         return data_dict
 
     def __sanitize_data_to_model(
-        self, data_to_model: List[DataObject]
+            self, data_to_model: List[DataObject]
     ) -> List[DataObject]:
         data_to_keep: List[DataObject] = []
         for data_object in data_to_model:
             if data_object.calibration_data is not None:
                 if (
-                    (data_object.calibration_first_concentration / 2)
-                    < data_object.validation_first_concentration
-                    and data_object.calibration_last_concentration
-                    <= 1.5 * data_object.validation_last_concentration
+                        (data_object.calibration_first_concentration / 2)
+                        < data_object.validation_first_concentration
+                        and data_object.calibration_last_concentration
+                        <= 1.5 * data_object.validation_last_concentration
                 ):
                     data_to_keep.append(data_object)
             else:
@@ -405,387 +410,22 @@ class ProfileManager:
         return len(self.data_objects)
 
 
-class ProfileLevel:
-    def __init__(
-        self,
-        level_data: pd.DataFrame,
-        absolute_acceptance: bool = False,
-        sigfig: int = 4,
-        use_median: bool = False
-    ):
-        self.data: pd.DataFrame = level_data
-        self.use_median: bool = use_median
-        self.sigfig: int = sigfig
-        self.introduced_concentration: Optional[np.float] = None
-        self.calculated_concentration: Optional[np.float] = None
-        self.bias_abs: Optional[float] = None
-        self.bias_rel: Optional[float] = None
-        self.recovery: Optional[float] = None
-        self.repeatability_var: Optional[float] = None
-        self.repeatability_std: Optional[float] = None
-        self.repeatability_cv: Optional[float] = None
-        self.inter_series_var: Optional[float] = None
-        self.inter_series_std: Optional[float] = None
-        self.inter_series_cv: Optional[float] = None
-        self.total_error_abs: Optional[float] = None
-        self.total_error_rel: Optional[float] = None
-        self.tolerance_abs: dict = {}
-        self.tolerance_rel: dict = {}
-        self.acceptance_limits_abs: dict = {}
-        self.sum_square_error_intra_series: Optional[float] = None
-        self.nb_series: Optional[int] = None
-        self.nb_measures: Optional[int] = None
-        self.nb_rep: Optional[int] = None
-        self.intermediate_precision_var: Optional[float] = None
-        self.intermediate_precision_std: Optional[float] = None
-        self.intermediate_precision_cv: Optional[float] = None
-        self.ratio_var: Optional[float] = None
-        self.b_coefficient: Optional[float] = None
-        self.degree_of_freedom: Optional[float] = None
-        self.tolerance_std: Optional[float] = None
-        self.uncertainty_abs: Optional[float] = None
-        self.uncertainty_rel: Optional[float] = None
-        self.uncertainty_pc: Optional[float] = None
-        self.cover_factor: Optional[float] = None
-        self.absolute_acceptance: bool = absolute_acceptance
-        self.intra_series_var: Optional[float] = None
-        self.intra_series_std: Optional[float] = None
-        self.intra_series_cv: Optional[float] = None
-
-    def calculate(self, tolerance_limit: float, acceptance_limit: float) -> None:
-        self.nb_series = self.data["Series"].nunique()
-        self.nb_measures = len(self.data.index)
-        self.nb_rep = self.nb_measures / self.nb_series
-
-        if self.use_median:
-            self.introduced_concentration = roundsf(self.data["x"].median(), self.sigfig)
-        else:
-            self.introduced_concentration = roundsf(self.data["x"].mean(), self.sigfig)
-
-        self.calculated_concentration = roundsf(self.data["x_calc"].mean(), self.sigfig)
-        self.acceptance_limits_abs = self.get_acceptance_limits_abs(
-            acceptance_limit
-        ).map(lambda x: roundsf(x, self.sigfig))
-        self.acceptance_limits_rel = self.get_acceptance_limits_rel(
-            acceptance_limit
-        ).map(lambda x: roundsf(x, self.sigfig))
-
-        self.bias_abs = roundsf(
-            self.calculated_concentration - self.introduced_concentration, self.sigfig
-        )
-        self.bias_rel = roundsf(
-            (self.bias_abs / self.introduced_concentration) * 100, self.sigfig
-        )
-        self.bias_abs_n = roundsf(self.data["bias_abs"].mean(), self.sigfig)
-        self.bias_rel_n = roundsf(self.data["bias_rel"].mean(), self.sigfig)
-        self.recovery = roundsf(self.get_recovery(), self.sigfig)
-
-        self.repeatability_var = roundsf(self.get_repeatability_var, self.sigfig)
-        self.repeatability_std = roundsf(math.sqrt(self.repeatability_var), self.sigfig)
-        self.repeatability_cv = roundsf(
-            self.repeatability_std / self.introduced_concentration * 100, self.sigfig
-        )
-
-        self.intra_series_var = roundsf(self.repeatability_var, self.sigfig)
-        self.intra_series_std = roundsf(self.repeatability_std, self.sigfig)
-        self.intra_series_cv = roundsf(self.repeatability_cv, self.sigfig)
-
-        self.inter_series_var = roundsf(self.get_inter_series_var, self.sigfig)
-        self.inter_series_std = roundsf(math.sqrt(self.inter_series_var), self.sigfig)
-        self.inter_series_cv = roundsf(
-            self.inter_series_std / self.calculated_concentration * 100, self.sigfig
-        )
-        self.intermediate_precision_var = roundsf(
-            self.repeatability_var + self.inter_series_var, self.sigfig
-        )
-        self.intermediate_precision_std = roundsf(
-            math.sqrt(self.intermediate_precision_var), self.sigfig
-        )
-        self.intermediate_precision_cv = roundsf(
-            self.intermediate_precision_std / self.introduced_concentration * 100,
-            self.sigfig,
-        )
-
-        self.total_error_abs = roundsf(
-            abs(self.bias_abs) + abs(self.intermediate_precision_std), self.sigfig
-        )
-        self.total_error_rel = roundsf(
-            self.total_error_abs / self.introduced_concentration * 100, self.sigfig
-        )
-
-        self.ratio_var = roundsf(self.get_ratio_var, self.sigfig)
-
-        self.b_coefficient = roundsf(
-            math.sqrt((self.ratio_var + 1) / (self.nb_rep * self.ratio_var + 1)),
-            self.sigfig,
-        )
-        self.degree_of_freedom = roundsf(
-            (self.ratio_var + 1) ** 2
-            / (
-                (self.ratio_var + (1 / self.nb_rep)) ** 2 / (self.nb_series - 1)
-                + (1 - (1 / self.nb_rep)) / self.nb_measures
-            ),
-            self.sigfig,
-        )
-        self.tolerance_std = roundsf(
-            self.intermediate_precision_std
-            * (math.sqrt(1 + (1 / (self.nb_measures * self.b_coefficient)))),
-            self.sigfig,
-        )
-        self.tolerance_abs = self.get_absolute_tolerance(tolerance_limit).map(
-            lambda x: roundsf(x, self.sigfig)
-        )
-        self.tolerance_rel = self.get_tolerance_rel().map(
-            lambda x: roundsf(x, self.sigfig)
-        )
-
-        self.uncertainty_abs = roundsf(self.tolerance_std * 2, self.sigfig)
-        self.uncertainty_rel = roundsf(
-            self.uncertainty_abs / self.calculated_concentration, self.sigfig
-        )
-        self.uncertainty_pc = roundsf(
-            self.uncertainty_abs / self.introduced_concentration * 100, self.sigfig
-        )
-
-    def get_recovery(self) -> float:
-        if self.absolute_acceptance:
-            return self.bias_abs
-        else:
-            return (self.calculated_concentration / self.introduced_concentration) * 100
-
-    def get_tolerance_rel(self) -> pd.Series:
-        if self.absolute_acceptance:
-            return pd.Series(
-                {
-                    "tolerance_rel_low": self.tolerance_abs["tolerance_abs_low"]
-                    - self.introduced_concentration,
-                    "tolerance_rel_high": self.tolerance_abs["tolerance_abs_high"]
-                    - self.introduced_concentration,
-                }
-            )
-        else:
-            return pd.Series(
-                {
-                    "tolerance_rel_low": self.tolerance_abs["tolerance_abs_low"]
-                    / self.introduced_concentration
-                    * 100,
-                    "tolerance_rel_high": self.tolerance_abs["tolerance_abs_high"]
-                    / self.introduced_concentration
-                    * 100,
-                }
-            )
-
-    def get_acceptance_limits_abs(self, acceptance_limit: float) -> pd.Series:
-        if self.absolute_acceptance:
-            introduced_limit: float = acceptance_limit
-        else:
-            introduced_limit: float = acceptance_limit / 100 * self.introduced_concentration
-        return pd.Series(
-            {
-                "acceptance_limits_abs_low": self.introduced_concentration
-                - introduced_limit,
-                "acceptance_limits_abs_high": self.introduced_concentration
-                + introduced_limit,
-            }
-        )
-
-    def get_acceptance_limits_rel(self, acceptance_limit: float) -> pd.Series:
-        if self.absolute_acceptance:
-            return pd.Series(
-                {
-                    "acceptance_limits_rel_low": 0 - acceptance_limit,
-                    "acceptance_limits_rel_high": 0 + acceptance_limit,
-                }
-            )
-        else:
-            return pd.Series(
-                {
-                    "acceptance_limits_rel_low": 100 - acceptance_limit,
-                    "acceptance_limits_rel_high": 100 + acceptance_limit,
-                }
-            )
-
-    def get_absolute_tolerance(self, tolerance_limit: float) -> pd.Series:
-
-        student = t.ppf(
-            (1 + (tolerance_limit / 100)) / 2, np.float32(self.degree_of_freedom)
-        )
-
-        self.cover_factor = student * math.sqrt(
-            1 + (1 / (self.nb_measures * np.power(self.b_coefficient, 2)))
-        )
-
-        tolerance_low = (
-            self.calculated_concentration
-            - self.cover_factor * self.intermediate_precision_std
-        )
-
-        tolerance_high = (
-            self.calculated_concentration
-            + self.cover_factor * self.intermediate_precision_std
-        )
-
-        if self.absolute_acceptance:
-            tolerance_low = tolerance_low
-            tolerance_high = tolerance_high
-
-        return pd.Series(
-            {"tolerance_abs_low": tolerance_low, "tolerance_abs_high": tolerance_high}
-        )
-
-    @property
-    def mean_square_model(self) -> float:
-        mean_x_level = self.data["x_calc"].mean()
-        mean_x_level_series = [
-            self.data[self.data["Series"] == series]["x_calc"].mean()
-            for series in self.data["Series"].unique()
-        ]
-        number_item_in_series = [
-            len(self.data[self.data["Series"] == series])
-            for series in self.data["Series"].unique()
-        ]
-        number_of_series = self.data["Series"].nunique()
-
-        return (1 / (number_of_series - 1)) * np.sum(
-            np.multiply(
-                number_item_in_series,
-                np.power(np.subtract(mean_x_level_series, mean_x_level), 2),
-            )
-        )
-
-    @property
-    def mean_square_error(self) -> float:
-        mean_x_level_series = [
-            self.data[self.data["Series"] == series]["x_calc"].mean()
-            for series in self.data["Series"].unique()
-        ]
-        number_item_in_series = [
-            len(self.data[self.data["Series"] == series])
-            for series in self.data["Series"].unique()
-        ]
-        number_of_series = self.data["Series"].nunique()
-        x_calc = [
-            self.data[self.data["Series"] == series]["x_calc"]
-            for series in self.data["Series"].unique()
-        ]
-
-        return (1 / (np.sum(number_item_in_series) - number_of_series)) * np.sum(
-            [
-                np.sum(
-                    np.power(
-                        np.subtract(
-                            x_calc[mean_x_level_series.index(mean_series)], mean_series
-                        ),
-                        2,
-                    )
-                )
-                for mean_series in mean_x_level_series
-            ]
-        )
-
-    @property
-    def get_inter_series_var(self) -> float:
-        number_item_in_series = [
-            len(self.data[self.data["Series"] == series])
-            for series in self.data["Series"].unique()
-        ]
-        if self.mean_square_error < self.mean_square_model:
-            inter_series_var = (
-                self.mean_square_model - self.mean_square_error
-            ) / number_item_in_series[0]
-        else:
-            inter_series_var = 0
-
-        return inter_series_var
-
-    @property
-    def sum_of_square_residual(self) -> np.ndarray:
-        mean_x_level_series = [
-            self.data[self.data["Series"] == series]["x_calc"].mean()
-            for series in self.data["Series"].unique()
-        ]
-        x_calc = [
-            self.data[self.data["Series"] == series]["x_calc"]
-            for series in self.data["Series"].unique()
-        ]
-
-        return np.sum(
-            [
-                np.sum(
-                    np.power(
-                        np.subtract(
-                            x_calc[mean_x_level_series.index(mean_series)], mean_series
-                        ),
-                        2,
-                    )
-                )
-                for mean_series in mean_x_level_series
-            ]
-        )
-
-    @property
-    def sum_of_square_total(self) -> np.ndarray:
-        mean_x_level = self.data["x_calc"].mean()
-        mean_x_level_series = [
-            self.data[self.data["Series"] == series]["x_calc"].mean()
-            for series in self.data["Series"].unique()
-        ]
-        number_item_in_series = [
-            len(self.data[self.data["Series"] == series])
-            for series in self.data["Series"].unique()
-        ]
-
-        return np.sum(
-            np.multiply(
-                number_item_in_series,
-                np.power(np.subtract(mean_x_level_series, mean_x_level), 2),
-            )
-        )
-
-    @property
-    def get_repeatability_var(self) -> float:
-        if self.mean_square_error < self.mean_square_model:
-            repeatability_var = self.mean_square_error
-        else:
-            mean_x_level = self.data["x_calc"].mean()
-            number_item_in_series = [
-                len(self.data[self.data["Series"] == series])
-                for series in self.data["Series"].unique()
-            ]
-            number_of_series = self.data["Series"].nunique()
-            x_calc = self.data["x_calc"]
-
-            repeatability_var = (
-                1 / (number_item_in_series[0] * number_of_series - 1)
-            ) * np.sum(np.power(np.subtract(x_calc, mean_x_level), 2))
-
-        return repeatability_var
-
-    @property
-    def get_ratio_var(self) -> float:
-        if self.inter_series_var == 0 or self.repeatability_var == 0:
-            ratio_var = 0
-        else:
-            ratio_var = self.inter_series_var / self.repeatability_var
-
-        return ratio_var
-
-
 class Profile:
     def __init__(
-        self,
-        model: Union[models.Model, DataObject],
-        correction_allowed: bool = False,
-        correction_threshold: List[float] = None,
-        forced_correction_value: float = None,
-        absolute_acceptance: bool = False,
-        correction_round_to: int = 2,
-        sigfig: int = 4,
-        lod_allowed: list = None,
-        lod_force_miller: bool = False,
-        compound: str= None,
-        units: str = None,
-        use_median: bool = False
+            self,
+            model: Union[models.Model, DataObject],
+            correction_allowed: bool = False,
+            correction_type: str = "slope",
+            correction_threshold: List[float] = None,
+            forced_correction_value: float = None,
+            absolute_acceptance: bool = False,
+            correction_round_to: int = 2,
+            sigfig: int = 4,
+            lod_allowed: list = None,
+            lod_force_miller: bool = False,
+            compound: str = None,
+            units: str = None,
+            use_median: bool = False,
     ):
         if lod_allowed is None:
             lod_allowed = ["LOQ/3.3", "Miller"]
@@ -804,10 +444,11 @@ class Profile:
         self.fig = None
         self.sigfig: int = sigfig
         self.correction_allowed: bool = correction_allowed
+        self.correction_type: str = correction_type
         self.correction_threshold: Optional[List[float]] = correction_threshold
         self.forced_correction_value: Optional[float] = forced_correction_value
         self.correction_round_to: int = correction_round_to
-        self.has_correction: bool = False
+        self.has_correction: Optional[str] = None
         self.correction_parameter: Optional[dict] = None
         self.correction_factor: Optional[float] = None
         self.lod_allowed = lod_allowed
@@ -878,8 +519,8 @@ class Profile:
 
     def calculate_bias(self) -> None:
         bias_abs: pd.Series = self.model.validation_data[
-            "x_calc"
-        ] - self.model.validation_data["x"]
+                                  "x_calc"
+                              ] - self.model.validation_data["x"]
         bias_rel = bias_abs / self.model.validation_data["x"] * 100
         self.model.add_value(
             bias_abs.map(lambda val: roundsf(val, self.sigfig)), "bias_abs"
@@ -889,7 +530,7 @@ class Profile:
         )
 
     def average_profile_parameter(
-        self, profile_parameter: str
+            self, profile_parameter: str
     ) -> Optional[Union[pd.DataFrame, np.ndarray]]:
         if type(profile_parameter) == str:
             profile_parameter = [profile_parameter]
@@ -913,7 +554,7 @@ class Profile:
             return None
 
     def get_profile_parameter(
-        self, profile_parameter: Union[str, list]
+            self, profile_parameter: Union[str, list]
     ) -> Optional[pd.DataFrame]:
         if type(profile_parameter) == str:
             profile_parameter = [profile_parameter]
@@ -923,7 +564,7 @@ class Profile:
                 value_dict: dict = {}
                 for index, level in self.profile_levels.items():
                     value_dict[index] = getattr(level, parameter)
-                if type(list(value_dict.values())[0])==pd.Series:
+                if type(list(value_dict.values())[0]) == pd.Series:
                     params_list = pd.concat([params_list, pd.DataFrame(value_dict)])
                 else:
                     params_list = pd.concat(
@@ -937,7 +578,7 @@ class Profile:
             return None
 
     def get_model_parameter(
-        self, model_parameter: Union[str, list]
+            self, model_parameter: Union[str, list]
     ) -> Optional[pd.DataFrame]:
         if type(model_parameter) == str:
             model_parameter = [model_parameter]
@@ -949,7 +590,7 @@ class Profile:
                         value_dict: dict = {}
                         for index, fit in self.model.fit.items():
                             value_dict[index] = getattr(fit, parameter)
-                        if type(list(value_dict.values())[0])==pd.Series:
+                        if type(list(value_dict.values())[0]) == pd.Series:
                             params_list = pd.concat(
                                 [params_list, pd.DataFrame(value_dict)]
                             )
@@ -1059,7 +700,8 @@ class Profile:
 
         return {
             "slope": {"value": slope, "p_value": x_plot.pvalues["x"], "std_error": x_plot.bse["x"]},
-            "intercept": {"value": intercept, "p_value": x_plot.pvalues["Intercept"], "std_error": x_plot.bse["Intercept"]},
+            "intercept": {"value": intercept, "p_value": x_plot.pvalues["Intercept"],
+                          "std_error": x_plot.bse["Intercept"]},
             "rsquared": {"value": x_plot.rsquared, "p_value": x_plot.f_pvalue, "std_error": ""}
         }
 
@@ -1109,13 +751,13 @@ class Profile:
                         "acceptance_limits_abs_low"
                     ],
                     "lower_inside": level.tolerance_abs["tolerance_abs_low"]
-                    > level.acceptance_limits_abs["acceptance_limits_abs_low"],
+                                    > level.acceptance_limits_abs["acceptance_limits_abs_low"],
                     "upper_tol_y_coord": level.tolerance_abs["tolerance_abs_high"],
                     "upper_acc_y_coord": level.acceptance_limits_abs[
                         "acceptance_limits_abs_high"
                     ],
                     "upper_inside": level.tolerance_abs["tolerance_abs_high"]
-                    < level.acceptance_limits_abs["acceptance_limits_abs_high"],
+                                    < level.acceptance_limits_abs["acceptance_limits_abs_high"],
                 }
             )
 
@@ -1185,10 +827,10 @@ class Profile:
 
             point_left: pd.Series = level_tolerance[
                 level_tolerance["x_coord"] <= intersects_data.at[index, "x_value"]
-            ].iloc[-1]
+                ].iloc[-1]
             point_right: pd.Series = level_tolerance[
                 level_tolerance["x_coord"] >= intersects_data.at[index, "x_value"]
-            ].iloc[0]
+                ].iloc[0]
 
             cur_x_coord: float = intersects_data.at[index, "x_value"]
 
@@ -1203,12 +845,12 @@ class Profile:
             left_opp_tol: float = point_left[level_switch[switch - 1] + "_tol_y_coord"]
             right_opp_tol: float = point_right[
                 level_switch[switch - 1] + "_tol_y_coord"
-            ]
+                ]
 
             left_opp_acc: float = point_left[level_switch[switch - 1] + "_acc_y_coord"]
             right_opp_acc: float = point_right[
                 level_switch[switch - 1] + "_acc_y_coord"
-            ]
+                ]
 
             opposite_tol: float = vx.get_value_between(
                 cur_x_coord,
@@ -1227,26 +869,26 @@ class Profile:
             intersects_data.at[index, "opposite_value"] = opposite_tol
 
             if (
-                min([right_opp_acc, right_acc])
-                < right_tol
-                < max([right_opp_acc, right_acc])
+                    min([right_opp_acc, right_acc])
+                    < right_tol
+                    < max([right_opp_acc, right_acc])
             ):
                 intersects_data.at[index, "going_in"] = 1
             else:
                 intersects_data.at[index, "going_in"] = 0
 
             if (
-                min([cur_acc, opposite_acc])
-                < opposite_tol
-                < max([cur_acc, opposite_acc])
+                    min([cur_acc, opposite_acc])
+                    < opposite_tol
+                    < max([cur_acc, opposite_acc])
             ):
                 intersects_data.at[index, "opposite_in"] = 1
             else:
                 intersects_data.at[index, "opposite_in"] = 0
 
             if (
-                intersects_data.at[index, "opposite_in"]
-                and intersects_data.at[index, "going_in"]
+                    intersects_data.at[index, "opposite_in"]
+                    and intersects_data.at[index, "going_in"]
             ):
                 intersects_data.at[index, "valid"] = 1
             else:
@@ -1260,33 +902,33 @@ class Profile:
         if len(intersects_data):  # if there are intersect
             # pick the last one going in that is valid
             if len(
-                intersects_data[
-                    (intersects_data["valid"] == 1) & (intersects_data["going_in"] == 1)
-                ]
+                    intersects_data[
+                        (intersects_data["valid"] == 1) & (intersects_data["going_in"] == 1)
+                    ]
             ):
                 min_loq = intersects_data["x_value"][
                     (intersects_data["valid"] == 1) & (intersects_data["going_in"] == 1)
-                ].iloc[-1]
+                    ].iloc[-1]
             elif (
-                level_tolerance.iloc[0]["lower_inside"]
-                and level_tolerance.iloc[0]["upper_inside"]
+                    level_tolerance.iloc[0]["lower_inside"]
+                    and level_tolerance.iloc[0]["upper_inside"]
             ):  # check if first point is in bounds
                 min_loq = level_tolerance.iloc[0]["x_coord"]
 
             # pick the last one going out that has an opposite in
             if len(
-                intersects_data[
-                    (intersects_data["opposite_in"] == 1)
-                    & (intersects_data["going_in"] == 0)
-                ]
+                    intersects_data[
+                        (intersects_data["opposite_in"] == 1)
+                        & (intersects_data["going_in"] == 0)
+                    ]
             ):
                 max_loq = intersects_data["x_value"][
                     (intersects_data["opposite_in"] == 1)
                     & (intersects_data["going_in"] == 0)
-                ].iloc[-1]
+                    ].iloc[-1]
             elif (  # check if the last point is in bounds
-                level_tolerance.iloc[-1]["lower_inside"]
-                and level_tolerance.iloc[-1]["upper_inside"]
+                    level_tolerance.iloc[-1]["lower_inside"]
+                    and level_tolerance.iloc[-1]["upper_inside"]
             ):
                 max_loq = level_tolerance.iloc[-1]["x_coord"]
             if intersects_data.iloc[-1]["valid"]:
@@ -1295,8 +937,8 @@ class Profile:
         else:  # no intersect
 
             if (
-                level_tolerance.iloc[0]["lower_inside"]
-                and level_tolerance.iloc[0]["upper_inside"]
+                    level_tolerance.iloc[0]["lower_inside"]
+                    and level_tolerance.iloc[0]["upper_inside"]
             ):
                 # check if first point is between bound, if there are no intersect, the last point should be in bounds
                 max_loq = level_tolerance.iloc[-1]["x_coord"]
@@ -1310,7 +952,7 @@ class Profile:
         return [min_loq, max_loq]
 
     def profile_data(
-        self, data_type: str = "", sigfig: int = 4
+            self, data_type: str = "", sigfig: int = 4
     ) -> Optional[Union[dict, pd.DataFrame]]:
 
         if hasattr(self.model, "fit"):
@@ -1472,15 +1114,12 @@ class Profile:
         intercept: float = x_plot.params["Intercept"]
         slope: float = x_plot.params["x"]
 
-        if slope < self.correction_threshold[0] or slope > self.correction_threshold[1]:
-            if self.forced_correction_value is not None:
-                self.correction_factor = roundsf(
-                    self.forced_correction_value, self.correction_round_to
-                )
-            else:
-                self.correction_factor = roundsf(1 / slope, self.correction_round_to)
-            self.has_correction = True
+        if self.correction_type == "average":
+            self.generate_correction_average()
+        else:
+            self.generate_correction_slope(slope)
 
+        if self.correction_factor:
             self.correction_parameter = {
                 "slope": {"value": slope, "p_value": x_plot.pvalues["x"], "std_error": x_plot.bse["x"]},
                 "intercept": {
@@ -1498,8 +1137,31 @@ class Profile:
                 corrected_value.map(lambda x: roundsf(x, self.sigfig))
             )
 
+    def generate_correction_average(self):
+        ratio: float = roundsf(
+            np.mean(self.model.data_x_calc / self.model.data_x()), self.sigfig
+        )
+        if ratio < self.correction_threshold[0] or ratio > self.correction_threshold[1]:
+            if self.forced_correction_value is not None:
+                self.correction_factor = roundsf(
+                    self.forced_correction_value, self.correction_round_to
+                )
+            else:
+                self.correction_factor = roundsf(1 / ratio, self.correction_round_to)
+            self.has_correction = 'average'
+
+    def generate_correction_slope(self, slope):
+        if slope < self.correction_threshold[0] or slope > self.correction_threshold[1]:
+            if self.forced_correction_value is not None:
+                self.correction_factor = roundsf(
+                    self.forced_correction_value, self.correction_round_to
+                )
+            else:
+                self.correction_factor = roundsf(1 / slope, self.correction_round_to)
+            self.has_correction = 'slope'
+
     def output_profile(
-        self, data_type: str = "", format: str = "dict", sigfig: int = 4
+            self, data_type: str = "", format: str = "dict", sigfig: int = 4
     ) -> Optional[str]:
 
         return_dict = {
@@ -1538,8 +1200,6 @@ class Profile:
                 orient="row"
             )
 
-
-
         if format == "dict":
             if data_type == "":
                 return return_dict
@@ -1575,11 +1235,11 @@ class Profile:
         linearity_fig = go.Figure()
         x_data = self.model.validation_data["x"].unique()
         linearity_y = (
-            x_data * self.linearity["slope"]["value"]
-            + self.linearity["intercept"]["value"]
+                x_data * self.linearity["slope"]["value"]
+                + self.linearity["intercept"]["value"]
         )
         linearity_fig.add_trace(
-            go.Scatter(x=x_data, y=linearity_y, mode="lines", name="Linearity",)
+            go.Scatter(x=x_data, y=linearity_y, mode="lines", name="Linearity", )
         )
         for series in self.model.list_of_series():
             linearity_fig.add_trace(
@@ -1616,8 +1276,8 @@ class Profile:
         if self.has_correction:
             correction_fig = go.Figure()
             correction_y = (
-                x_data * self.correction_parameter["slope"]["value"]
-                + self.correction_parameter["intercept"]["value"]
+                    x_data * self.correction_parameter["slope"]["value"]
+                    + self.correction_parameter["intercept"]["value"]
             )
             correction_fig.add_trace(
                 go.Scatter(
@@ -1686,7 +1346,8 @@ class Profile:
                 y1=0,
                 line={"color": "Green"},
             )
-            x_data_spread = np.linspace(x_data.min(), x_data.max(), 100)
+            cal_x_data = self.model.calibration_data["x"].unique()
+            x_data_spread = np.linspace(cal_x_data.min(), cal_x_data.max(), 100)
             if type(self.model.root_function) == dict:
                 for index, regression in self.model.root_function.items():
                     regression_fig.add_trace(
@@ -1762,7 +1423,8 @@ class Profile:
                         x=self.model.get_series(index, 'calibration')["x"],
                         y=self.model.get_series(index, 'calibration')["y"],
                         mode="markers",
-                        name="Series " + str(index) if self.model.list_of_series('calibration').size > 1 else "All Series",
+                        name="Series " + str(index) if self.model.list_of_series(
+                            'calibration').size > 1 else "All Series",
                         marker={
                             "size": 10,
                             "line": {"color": "DarkSlateGrey", "width": 2},
@@ -1850,7 +1512,7 @@ class Profile:
                 name="Recovery",
                 mode="lines",
                 error_y={"type": "data", "array": uncertainty, "visible": True},
-                line={"color": "green",},
+                line={"color": "green", },
             )
         )
         profile_fig.add_trace(
@@ -1860,7 +1522,7 @@ class Profile:
                 legendgroup="Tolerance",
                 name="Tolerance",
                 mode="lines",
-                line={"color": "blue",},
+                line={"color": "blue", },
             )
         )
         profile_fig.add_trace(
@@ -1871,7 +1533,7 @@ class Profile:
                 name="Tolerance",
                 mode="lines",
                 showlegend=False,
-                line={"color": "blue",},
+                line={"color": "blue", },
             )
         )
         profile_fig.add_trace(
@@ -1896,11 +1558,27 @@ class Profile:
             )
         )
 
+        if self.absolute_acceptance:
+            y_middle = 0
+            bias_type = "bias_abs"
+        else:
+            y_middle = 100
+            bias_type = "bias_rel"
+
+        profile_fig.add_trace(
+            go.Scatter(
+                x=profile_data["introduced_concentration"],
+                y=[y_middle] * profile_data["introduced_concentration"].size,
+                legendgroup="Bias",
+                name="Bias",
+                mode="lines",
+                showlegend=False,
+                line={"color": "black", "dash": "dash"},
+            )
+        )
+
         for series in self.model.list_of_series():
-            if self.absolute_acceptance:
-                y_data = self.model.get_series(series)["bias_abs"]
-            else:
-                y_data = 100 + self.model.get_series(series)["bias_rel"]
+            y_data = y_middle + self.model.get_series(series)[bias_type]
             profile_fig.add_trace(
                 go.Scatter(
                     x=self.model.get_series(series)["x"],
@@ -1932,11 +1610,377 @@ class Profile:
         self.graphs["profile"] = profile_fig
 
 
+class ProfileLevel:
+    def __init__(
+            self,
+            level_data: pd.DataFrame,
+            absolute_acceptance: bool = False,
+            sigfig: int = 4,
+            use_median: bool = False
+    ):
+        self.data: pd.DataFrame = level_data
+        self.use_median: bool = use_median
+        self.sigfig: int = sigfig
+        self.introduced_concentration: Optional[np.float] = None
+        self.calculated_concentration: Optional[np.float] = None
+        self.bias_abs: Optional[float] = None
+        self.bias_rel: Optional[float] = None
+        self.recovery: Optional[float] = None
+        self.repeatability_var: Optional[float] = None
+        self.repeatability_std: Optional[float] = None
+        self.repeatability_cv: Optional[float] = None
+        self.inter_series_var: Optional[float] = None
+        self.inter_series_std: Optional[float] = None
+        self.inter_series_cv: Optional[float] = None
+        self.total_error_abs: Optional[float] = None
+        self.total_error_rel: Optional[float] = None
+        self.tolerance_abs: dict = {}
+        self.tolerance_rel: dict = {}
+        self.acceptance_limits_abs: dict = {}
+        self.sum_square_error_intra_series: Optional[float] = None
+        self.nb_series: Optional[int] = None
+        self.nb_measures: Optional[int] = None
+        self.nb_rep: Optional[int] = None
+        self.intermediate_precision_var: Optional[float] = None
+        self.intermediate_precision_std: Optional[float] = None
+        self.intermediate_precision_cv: Optional[float] = None
+        self.ratio_var: Optional[float] = None
+        self.b_coefficient: Optional[float] = None
+        self.degree_of_freedom: Optional[float] = None
+        self.tolerance_std: Optional[float] = None
+        self.uncertainty_abs: Optional[float] = None
+        self.uncertainty_rel: Optional[float] = None
+        self.uncertainty_pc: Optional[float] = None
+        self.cover_factor: Optional[float] = None
+        self.absolute_acceptance: bool = absolute_acceptance
+        self.intra_series_var: Optional[float] = None
+        self.intra_series_std: Optional[float] = None
+        self.intra_series_cv: Optional[float] = None
+
+    def calculate(self, tolerance_limit: float, acceptance_limit: float) -> None:
+        self.nb_series = self.data["Series"].nunique()
+        self.nb_measures = len(self.data.index)
+        self.nb_rep = self.nb_measures / self.nb_series
+
+        if self.use_median:
+            self.introduced_concentration = roundsf(self.data["x"].median(), self.sigfig)
+        else:
+            self.introduced_concentration = roundsf(self.data["x"].mean(), self.sigfig)
+
+        self.calculated_concentration = roundsf(self.data["x_calc"].mean(), self.sigfig)
+        self.acceptance_limits_abs = self.get_acceptance_limits_abs(
+            acceptance_limit
+        ).map(lambda x: roundsf(x, self.sigfig))
+        self.acceptance_limits_rel = self.get_acceptance_limits_rel(
+            acceptance_limit
+        ).map(lambda x: roundsf(x, self.sigfig))
+
+        self.bias_abs = roundsf(
+            self.calculated_concentration - self.introduced_concentration, self.sigfig
+        )
+        self.bias_rel = roundsf(
+            (self.bias_abs / self.introduced_concentration) * 100, self.sigfig
+        )
+        self.bias_abs_n = roundsf(self.data["bias_abs"].mean(), self.sigfig)
+        self.bias_rel_n = roundsf(self.data["bias_rel"].mean(), self.sigfig)
+        self.recovery = roundsf(self.get_recovery(), self.sigfig)
+
+        self.repeatability_var = roundsf(self.get_repeatability_var, self.sigfig)
+        self.repeatability_std = roundsf(math.sqrt(self.repeatability_var), self.sigfig)
+        self.repeatability_cv = roundsf(
+            self.repeatability_std / self.introduced_concentration * 100, self.sigfig
+        )
+
+        self.intra_series_var = roundsf(self.repeatability_var, self.sigfig)
+        self.intra_series_std = roundsf(self.repeatability_std, self.sigfig)
+        self.intra_series_cv = roundsf(self.repeatability_cv, self.sigfig)
+
+        self.inter_series_var = roundsf(self.get_inter_series_var, self.sigfig)
+        self.inter_series_std = roundsf(math.sqrt(self.inter_series_var), self.sigfig)
+        self.inter_series_cv = roundsf(
+            self.inter_series_std / self.calculated_concentration * 100, self.sigfig
+        )
+        self.intermediate_precision_var = roundsf(
+            self.repeatability_var + self.inter_series_var, self.sigfig
+        )
+        self.intermediate_precision_std = roundsf(
+            math.sqrt(self.intermediate_precision_var), self.sigfig
+        )
+        self.intermediate_precision_cv = roundsf(
+            self.intermediate_precision_std / self.introduced_concentration * 100,
+            self.sigfig,
+        )
+
+        self.total_error_abs = roundsf(
+            abs(self.bias_abs) + abs(self.intermediate_precision_std), self.sigfig
+        )
+        self.total_error_rel = roundsf(
+            self.total_error_abs / self.introduced_concentration * 100, self.sigfig
+        )
+
+        self.ratio_var = roundsf(self.get_ratio_var, self.sigfig)
+
+        self.b_coefficient = roundsf(
+            math.sqrt((self.ratio_var + 1) / (self.nb_rep * self.ratio_var + 1)),
+            self.sigfig,
+        )
+        self.degree_of_freedom = roundsf(
+            (self.ratio_var + 1) ** 2
+            / (
+                    (self.ratio_var + (1 / self.nb_rep)) ** 2 / (self.nb_series - 1)
+                    + (1 - (1 / self.nb_rep)) / self.nb_measures
+            ),
+            self.sigfig,
+        )
+        self.tolerance_std = roundsf(
+            self.intermediate_precision_std
+            * (math.sqrt(1 + (1 / (self.nb_measures * self.b_coefficient)))),
+            self.sigfig,
+        )
+        self.tolerance_abs = self.get_absolute_tolerance(tolerance_limit).map(
+            lambda x: roundsf(x, self.sigfig)
+        )
+        self.tolerance_rel = self.get_tolerance_rel().map(
+            lambda x: roundsf(x, self.sigfig)
+        )
+
+        self.uncertainty_abs = roundsf(self.tolerance_std * 2, self.sigfig)
+        self.uncertainty_rel = roundsf(
+            self.uncertainty_abs / self.calculated_concentration, self.sigfig
+        )
+        self.uncertainty_pc = roundsf(
+            self.uncertainty_abs / self.introduced_concentration * 100, self.sigfig
+        )
+
+    def get_recovery(self) -> float:
+        if self.absolute_acceptance:
+            return self.bias_abs
+        else:
+            return (self.calculated_concentration / self.introduced_concentration) * 100
+
+    def get_tolerance_rel(self) -> pd.Series:
+        if self.absolute_acceptance:
+            return pd.Series(
+                {
+                    "tolerance_rel_low": self.tolerance_abs["tolerance_abs_low"]
+                                         - self.introduced_concentration,
+                    "tolerance_rel_high": self.tolerance_abs["tolerance_abs_high"]
+                                          - self.introduced_concentration,
+                }
+            )
+        else:
+            return pd.Series(
+                {
+                    "tolerance_rel_low": self.tolerance_abs["tolerance_abs_low"]
+                                         / self.introduced_concentration
+                                         * 100,
+                    "tolerance_rel_high": self.tolerance_abs["tolerance_abs_high"]
+                                          / self.introduced_concentration
+                                          * 100,
+                }
+            )
+
+    def get_acceptance_limits_abs(self, acceptance_limit: float) -> pd.Series:
+        if self.absolute_acceptance:
+            introduced_limit: float = acceptance_limit
+        else:
+            introduced_limit: float = acceptance_limit / 100 * self.introduced_concentration
+        return pd.Series(
+            {
+                "acceptance_limits_abs_low": self.introduced_concentration
+                                             - introduced_limit,
+                "acceptance_limits_abs_high": self.introduced_concentration
+                                              + introduced_limit,
+            }
+        )
+
+    def get_acceptance_limits_rel(self, acceptance_limit: float) -> pd.Series:
+        if self.absolute_acceptance:
+            return pd.Series(
+                {
+                    "acceptance_limits_rel_low": 0 - acceptance_limit,
+                    "acceptance_limits_rel_high": 0 + acceptance_limit,
+                }
+            )
+        else:
+            return pd.Series(
+                {
+                    "acceptance_limits_rel_low": 100 - acceptance_limit,
+                    "acceptance_limits_rel_high": 100 + acceptance_limit,
+                }
+            )
+
+    def get_absolute_tolerance(self, tolerance_limit: float) -> pd.Series:
+
+        student = t.ppf(
+            (1 + (tolerance_limit / 100)) / 2, np.float32(self.degree_of_freedom)
+        )
+
+        self.cover_factor = student * math.sqrt(
+            1 + (1 / (self.nb_measures * np.power(self.b_coefficient, 2)))
+        )
+
+        tolerance_low = (
+                self.calculated_concentration
+                - self.cover_factor * self.intermediate_precision_std
+        )
+
+        tolerance_high = (
+                self.calculated_concentration
+                + self.cover_factor * self.intermediate_precision_std
+        )
+
+        if self.absolute_acceptance:
+            tolerance_low = tolerance_low
+            tolerance_high = tolerance_high
+
+        return pd.Series(
+            {"tolerance_abs_low": tolerance_low, "tolerance_abs_high": tolerance_high}
+        )
+
+    @property
+    def mean_square_model(self) -> float:
+        mean_x_level = self.data["x_calc"].mean()
+        mean_x_level_series = [
+            self.data[self.data["Series"] == series]["x_calc"].mean()
+            for series in self.data["Series"].unique()
+        ]
+        number_item_in_series = [
+            len(self.data[self.data["Series"] == series])
+            for series in self.data["Series"].unique()
+        ]
+        number_of_series = self.data["Series"].nunique()
+
+        return (1 / (number_of_series - 1)) * np.sum(
+            np.multiply(
+                number_item_in_series,
+                np.power(np.subtract(mean_x_level_series, mean_x_level), 2),
+            )
+        )
+
+    @property
+    def mean_square_error(self) -> float:
+        mean_x_level_series = [
+            self.data[self.data["Series"] == series]["x_calc"].mean()
+            for series in self.data["Series"].unique()
+        ]
+        number_item_in_series = [
+            len(self.data[self.data["Series"] == series])
+            for series in self.data["Series"].unique()
+        ]
+        number_of_series = self.data["Series"].nunique()
+        x_calc = [
+            self.data[self.data["Series"] == series]["x_calc"]
+            for series in self.data["Series"].unique()
+        ]
+
+        return (1 / (np.sum(number_item_in_series) - number_of_series)) * np.sum(
+            [
+                np.sum(
+                    np.power(
+                        np.subtract(
+                            x_calc[mean_x_level_series.index(mean_series)], mean_series
+                        ),
+                        2,
+                    )
+                )
+                for mean_series in mean_x_level_series
+            ]
+        )
+
+    @property
+    def get_inter_series_var(self) -> float:
+        number_item_in_series = [
+            len(self.data[self.data["Series"] == series])
+            for series in self.data["Series"].unique()
+        ]
+        if self.mean_square_error < self.mean_square_model:
+            inter_series_var = (
+                                       self.mean_square_model - self.mean_square_error
+                               ) / number_item_in_series[0]
+        else:
+            inter_series_var = 0
+
+        return inter_series_var
+
+    @property
+    def sum_of_square_residual(self) -> np.ndarray:
+        mean_x_level_series = [
+            self.data[self.data["Series"] == series]["x_calc"].mean()
+            for series in self.data["Series"].unique()
+        ]
+        x_calc = [
+            self.data[self.data["Series"] == series]["x_calc"]
+            for series in self.data["Series"].unique()
+        ]
+
+        return np.sum(
+            [
+                np.sum(
+                    np.power(
+                        np.subtract(
+                            x_calc[mean_x_level_series.index(mean_series)], mean_series
+                        ),
+                        2,
+                    )
+                )
+                for mean_series in mean_x_level_series
+            ]
+        )
+
+    @property
+    def sum_of_square_total(self) -> np.ndarray:
+        mean_x_level = self.data["x_calc"].mean()
+        mean_x_level_series = [
+            self.data[self.data["Series"] == series]["x_calc"].mean()
+            for series in self.data["Series"].unique()
+        ]
+        number_item_in_series = [
+            len(self.data[self.data["Series"] == series])
+            for series in self.data["Series"].unique()
+        ]
+
+        return np.sum(
+            np.multiply(
+                number_item_in_series,
+                np.power(np.subtract(mean_x_level_series, mean_x_level), 2),
+            )
+        )
+
+    @property
+    def get_repeatability_var(self) -> float:
+        if self.mean_square_error < self.mean_square_model:
+            repeatability_var = self.mean_square_error
+        else:
+            mean_x_level = self.data["x_calc"].mean()
+            number_item_in_series = [
+                len(self.data[self.data["Series"] == series])
+                for series in self.data["Series"].unique()
+            ]
+            number_of_series = self.data["Series"].nunique()
+            x_calc = self.data["x_calc"]
+
+            repeatability_var = (
+                                        1 / (number_item_in_series[0] * number_of_series - 1)
+                                ) * np.sum(np.power(np.subtract(x_calc, mean_x_level), 2))
+
+        return repeatability_var
+
+    @property
+    def get_ratio_var(self) -> float:
+        if self.inter_series_var == 0 or self.repeatability_var == 0:
+            ratio_var = 0
+        else:
+            ratio_var = self.inter_series_var / self.repeatability_var
+
+        return ratio_var
+
+
 class Optimizer:
     def __init__(
-        self,
-        profiles: Dict[str, Profile],
-        optimizer_parameters: Dict[str, Union[str, bool]],
+            self,
+            profiles: Dict[str, Profile],
+            optimizer_parameters: Dict[str, Union[str, bool]],
     ):
 
         self.parameter_function: Dict[str, Callable] = {
@@ -1972,7 +2016,7 @@ class Optimizer:
         for parameter in boolean_parameter:
             final_dataframe = final_dataframe[
                 final_dataframe[parameter] == self.parameters[parameter]
-            ]
+                ]
 
         final_dataframe = final_dataframe.sort_values(
             by=list(ascending_parameter.keys()), ascending=ascending_parameter.values()
@@ -1997,7 +2041,7 @@ class Optimizer:
             self.__get_max_loq(), self.__get_min_loq(), on=["Model", "Index"]
         )
         valid_range["validation_range"] = (
-            valid_range["max_loq"] - valid_range["min_loq"]
+                valid_range["max_loq"] - valid_range["min_loq"]
         )
         valid_range = valid_range.drop(["min_loq", "max_loq"], axis=1)
         return valid_range

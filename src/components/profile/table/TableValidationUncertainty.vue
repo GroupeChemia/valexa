@@ -1,7 +1,7 @@
 <template>
       <v-row>
         <v-col>
-          <span class="text-h5">Validation Uncertainty</span>
+          <span class="text-h5">Uncertainty</span>
           <v-data-table
             dense
             :headers="headers"

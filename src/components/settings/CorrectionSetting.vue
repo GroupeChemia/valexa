@@ -41,6 +41,15 @@
                         hint="The average deviation or recovery threshold at which a correction factor will be generated, example: 0.8, 1.2."
                         v-model="correctionThreshold"
                 />
+                <v-text-field
+                          outlined
+                          rounded
+                          dense
+                          label="correction_type"
+                          persistent-hint
+                          hint="The type of correction to apply: using the slope of the predicted vs expected or the average bias"
+                          v-model="correctionType"
+                  />
             </v-card-text>
         </v-card>
     </v-col>
@@ -125,7 +134,22 @@
                         value: value
                     })
                 }
-            }
+            },
+            correctionType: {
+                  get () {
+                      return this.getSettingsValue({
+                          name:this.settingsName,
+                          setting: 'correction_type'
+                      })
+                  },
+                  set (value) {
+                      this.setSettingsValue({
+                          name:this.settingsName,
+                          setting: 'correction_type',
+                          value: value
+                      })
+                  }
+              }
         },
         methods: {
             ...mapMutations([

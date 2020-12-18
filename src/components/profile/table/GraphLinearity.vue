@@ -40,7 +40,7 @@
                 </tr>
                 <tr>
                   <td>R²</td>
-                  <td>{{tableData.linearity_info.r_squared.value}}</td>
+                  <td>{{tableData.linearity_info.rsquared.value}}</td>
                 </tr>
                 </tbody>
               </v-simple-table>
@@ -80,7 +80,7 @@
                 </tr>
                 <tr>
                   <td>R²</td>
-                  <td>{{tableData.correction_info.r_squared.value}}</td>
+                  <td>{{tableData.correction_info.rsquared.value}}</td>
                 </tr>
                 </tbody>
               </v-simple-table>
