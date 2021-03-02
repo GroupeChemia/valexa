@@ -1,7 +1,7 @@
 <template>
   <v-row>
     <v-col>
-      <Plotly
+      <VuePlotly
           :data="graphData.data"
           :layout="graphData.layout"
           :display-mode-bar="false"
@@ -11,7 +11,7 @@
 </template>
 
 <script>
-  import { Plotly } from 'vue-plotly'
+  import VuePlotly from '@statnett/vue-plotly'
 
   export default {
     name: "GraphRegression",
@@ -19,7 +19,7 @@
       graphData: Object
     },
     components: {
-      Plotly
+      VuePlotly
     }
   }
 </script>

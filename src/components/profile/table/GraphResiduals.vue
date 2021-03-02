@@ -1,14 +1,14 @@
 <template>
   <v-row>
     <v-col>
-      <Plotly
+      <VuePlotly
           :data="residualsData.data"
           :layout="residualsData.layout"
           :display-mode-bar="false"
       />
     </v-col>
     <v-col>
-      <Plotly
+      <VuePlotly
           :data="residualsStudentData.data"
           :layout="residualsStudentData.layout"
           :display-mode-bar="false"
@@ -18,12 +18,12 @@
 </template>
 
 <script>
-  import { Plotly } from 'vue-plotly'
+  import VuePlotly from '@statnett/vue-plotly'
 
   export default {
     name: "GraphResiduals",
     components: {
-      Plotly
+      VuePlotly
     },
     props: {
       residualsData: Object,

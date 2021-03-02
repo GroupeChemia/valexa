@@ -10,7 +10,7 @@
         <v-col>
           <v-row>
             <v-col>
-              <Plotly
+              <VuePlotly
                   :data="graphsData.linearity.data"
                   :layout="graphsData.linearity.layout"
                   :display-mode-bar="false"
@@ -50,7 +50,7 @@
         <v-col v-if="hasCorrection">
           <v-row>
             <v-col>
-              <Plotly
+              <VuePlotly
                   :data="graphsData.correction.data"
                   :layout="graphsData.correction.layout"
                   :display-mode-bar="false"
@@ -93,7 +93,7 @@
 </template>
 
 <script>
-  import { Plotly } from 'vue-plotly'
+  import VuePlotly from '@statnett/vue-plotly'
 
   export default {
     name: "GraphLinearity",
@@ -103,7 +103,7 @@
       tableData: Object
     },
     components: {
-      Plotly
+      VuePlotly
     }
   }
 </script>

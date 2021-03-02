@@ -27,7 +27,7 @@
         pythonOptions: ['-u'],
         args: parameters
       })
-      writer = spawnedProcess.send
+      writer = spawnedProcess.send.bind(spawnedProcess)
       reader = spawnedProcess
       eventType = 'message'
       returnLine = "" //Pyshell already return the line
