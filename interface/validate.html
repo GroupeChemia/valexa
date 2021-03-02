@@ -2,19 +2,46 @@
     const { ipcRenderer } = require('electron');
     const loadBalancer = require('electron-load-balancer');
     const { PythonShell } = require('python-shell')
+    const ChildProcess = require('child_process');
     const path = require('path');
+    var readline = require('readline');
+    var parameters = ['validate']
+    const executablePath = 'interface//interface.exe'
 
-    let pyshell = new PythonShell('interface.py', {
+    let eventType = 'line' //message
+    let reader, writer, spawnedProcess
+
+    if (process.env.NODE_ENV === 'production') {
+      spawnedProcess = ChildProcess.spawn(executablePath, parameters, {stdio: ['pipe', 'pipe', 'pipe']})
+      //This is hacky, to be able to read the buffer by line.
+      writer = spawnedProcess.stdin.write.bind(spawnedProcess.stdin)
+      reader = new readline.createInterface({
+        input: spawnedProcess.stdout,
+        terminal: false
+      })
+      eventType = 'line'
+      returnLine = "\n"
+    } else {
+      spawnedProcess = new PythonShell('interface.py', {
         pythonPath: path.join(process.env["npm_config_prefix"], '\\python'),
         pythonOptions: ['-u'],
-        args: ['validate']
-    } )
+        args: parameters
+      })
+      writer = spawnedProcess.send
+      reader = spawnedProcess
+      eventType = 'message'
+      returnLine = "" //Pyshell already return the line
+    }
+
+
 
     loadBalancer.job(
         ipcRenderer,
         'validate',
         () => {
-            pyshell.on('message', function(message) {
+            reader.on(eventType, function(message) {
+                message = message.toString()
+                console.log(message)
                 ipcRenderer.send("GEN_MESSAGE", message)
                 if (message === "EXIT") {
                     loadBalancer.stop(ipcRenderer, 'validate')
@@ -32,7 +59,7 @@
             })
         },
         () => {
-            pyshell.terminate()
+            writer.terminate()
         });
 
 </script>

@@ -1,18 +1,41 @@
 <script>
-    const { ipcRenderer } = require('electron');
-    const loadBalancer = require('electron-load-balancer');
-    const { PythonShell } = require('python-shell')
-    const path = require('path');
     const querystring = require('querystring');
     let query = querystring.parse(global.location.search);
     let processNumber = JSON.parse(query['?processNumber'])
     let profilerName = 'profiler' + processNumber
+    const { ipcRenderer } = require('electron');
+    const loadBalancer = require('electron-load-balancer');
+    const { PythonShell } = require('python-shell')
+    const ChildProcess = require('child_process');
+    const path = require('path');
+    var readline = require('readline');
+    var parameters = ['test']
+    const executablePath = 'interface//interface.exe'
 
-    let pyshell = new PythonShell('interface.py', {
+    let eventType = 'line' //message
+    let reader, writer, spawnedProcess
+
+    if (process.env.NODE_ENV === 'production') {
+      spawnedProcess = ChildProcess.spawn(executablePath, parameters, {stdio: ['pipe', 'pipe', 'pipe']})
+      //This is hacky, to be able to read the buffer by line.
+      writer = spawnedProcess.stdin.write.bind(spawnedProcess.stdin)
+      reader = new readline.createInterface({
+        input: spawnedProcess.stdout,
+        terminal: false
+      })
+      eventType = 'line'
+      returnLine = "\n"
+    } else {
+      spawnedProcess = new PythonShell('interface.py', {
         pythonPath: path.join(process.env["npm_config_prefix"], '\\python'),
         pythonOptions: ['-u'],
-        args: ['test']
-    } )
+        args: parameters
+      })
+      writer = spawnedProcess.send
+      reader = spawnedProcess
+      eventType = 'message'
+      returnLine = "" //Pyshell already return the line
+    }
 
 
     loadBalancer.job(
@@ -21,10 +44,10 @@
         () => {
             loadBalancer.onReceiveData(ipcRenderer, profilerName, args => {
                 ipcRenderer.send("GEN_MESSAGE", JSON.stringify(args.data))
-                pyshell.send(JSON.stringify(args.data));
+                writer(JSON.stringify(args.data) + returnLine);
             });
 
-            pyshell.on('message', function(message) {
+            reader.on(eventType, function(message) {
                 ipcRenderer.send("GEN_MESSAGE", message)
                 if (message === "EXIT") {
                     loadBalancer.stop(ipcRenderer, profilerName)
@@ -43,13 +66,13 @@
                         ipcRenderer.send("PROFILER_WORKER_ERROR", profilerName)
                         console.log(e)
                         console.log(message)
-                        pyshell.terminate()
+                        spawnedProcess.terminate()
                     }
                 }
             })
         },
         () => {
-            pyshell.terminate()
+            spawnedProcess.terminate()
         });
 
         ipcRenderer.send('PROFILER_WORKER_INIT', profilerName)

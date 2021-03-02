@@ -75,9 +75,14 @@ def format_json_to_data(data):
 
 
 def roundsf(data, sigfig):
+
     if data == None or data == '':
         return data
+    if type(data) == str:
+        return data
     if math.isnan(data):
+        return data
+    if math.isinf(data):
         return data
     if sigfig > 0:
         if type(data).__module__ == "numpy":

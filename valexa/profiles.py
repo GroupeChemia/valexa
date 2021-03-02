@@ -1678,18 +1678,24 @@ class ProfileLevel:
         self.bias_abs = roundsf(
             self.calculated_concentration - self.introduced_concentration, self.sigfig
         )
-        self.bias_rel = roundsf(
-            (self.bias_abs / self.introduced_concentration) * 100, self.sigfig
-        )
+        try:
+            self.bias_rel = roundsf(
+                (self.bias_abs / self.introduced_concentration) * 100, self.sigfig
+            )
+        except ZeroDivisionError:
+            self.bias_rel = "N/A"
         self.bias_abs_n = roundsf(self.data["bias_abs"].mean(), self.sigfig)
         self.bias_rel_n = roundsf(self.data["bias_rel"].mean(), self.sigfig)
         self.recovery = roundsf(self.get_recovery(), self.sigfig)
 
         self.repeatability_var = roundsf(self.get_repeatability_var, self.sigfig)
         self.repeatability_std = roundsf(math.sqrt(self.repeatability_var), self.sigfig)
-        self.repeatability_cv = roundsf(
-            self.repeatability_std / self.introduced_concentration * 100, self.sigfig
-        )
+        try:
+            self.repeatability_cv = roundsf(
+                self.repeatability_std / self.introduced_concentration * 100, self.sigfig
+            )
+        except ZeroDivisionError:
+            self.repeatability_cv = "N/A"
 
         self.intra_series_var = roundsf(self.repeatability_var, self.sigfig)
         self.intra_series_std = roundsf(self.repeatability_std, self.sigfig)
@@ -1706,17 +1712,23 @@ class ProfileLevel:
         self.intermediate_precision_std = roundsf(
             math.sqrt(self.intermediate_precision_var), self.sigfig
         )
-        self.intermediate_precision_cv = roundsf(
-            self.intermediate_precision_std / self.introduced_concentration * 100,
-            self.sigfig,
-        )
+        try:
+            self.intermediate_precision_cv = roundsf(
+                self.intermediate_precision_std / self.introduced_concentration * 100,
+                self.sigfig,
+            )
+        except ZeroDivisionError:
+            self.intermediate_precision_cv = "N/A"
 
         self.total_error_abs = roundsf(
             abs(self.bias_abs) + abs(self.intermediate_precision_std), self.sigfig
         )
-        self.total_error_rel = roundsf(
-            self.total_error_abs / self.introduced_concentration * 100, self.sigfig
-        )
+        try:
+            self.total_error_rel = roundsf(
+                self.total_error_abs / self.introduced_concentration * 100, self.sigfig
+            )
+        except ZeroDivisionError:
+            self.total_error_rel = "N/A"
 
         self.ratio_var = roundsf(self.get_ratio_var, self.sigfig)
 
@@ -1748,15 +1760,22 @@ class ProfileLevel:
         self.uncertainty_rel = roundsf(
             self.uncertainty_abs / self.calculated_concentration, self.sigfig
         )
-        self.uncertainty_pc = roundsf(
-            self.uncertainty_abs / self.introduced_concentration * 100, self.sigfig
-        )
+
+        try:
+            self.uncertainty_pc = roundsf(
+                self.uncertainty_abs / self.introduced_concentration * 100, self.sigfig
+            )
+        except ZeroDivisionError:
+            self.uncertainty_pc = "N/A"
 
     def get_recovery(self) -> float:
         if self.absolute_acceptance:
             return self.bias_abs
         else:
-            return (self.calculated_concentration / self.introduced_concentration) * 100
+            try:
+                return (self.calculated_concentration / self.introduced_concentration) * 100
+            except ZeroDivisionError:
+                return 0
 
     def get_tolerance_rel(self) -> pd.Series:
         if self.absolute_acceptance:
