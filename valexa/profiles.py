@@ -947,7 +947,10 @@ class Profile:
         # debug check
         if min_loq is not None and max_loq is not None:
             if min_loq > max_loq:  # ensure that the min_loq is smaller than the max_loq
-                print("Error here")
+                temp = min_loq
+                min_loq = max_loq
+                max_loq = temp
+                #print("Error here")
 
         return [min_loq, max_loq]
 

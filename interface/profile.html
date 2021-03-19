@@ -53,6 +53,7 @@
                     loadBalancer.stop(ipcRenderer, profilerName)
                 } else {
                     try {
+                      console.log(message)
                         const parsedJSON = JSON.parse(message)
                         switch (parsedJSON['type']) {
                             case 'PROFILE':

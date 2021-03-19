@@ -13,7 +13,8 @@ module.exports = {
 
     pluginOptions: {
       electronBuilder: {
-        nodeIntegration: true
+        nodeIntegration: true,
+        externals: ['plotly.js-dist']
       },
       i18n: {
         locale: 'en',
