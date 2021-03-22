@@ -124,7 +124,7 @@ def generateProfile(docObj, **data):
             }""",
             f"{modelInfo['average_recovery']}",
             f"{modelInfo['tolerance']} %",
-            f"""{modelInfo['acceptance']} {modelInfo['units'] + " (Relative)" if modelInfo['absolute_acceptance'] else "% (Absolute)"}""",
+            f"""{modelInfo['acceptance']} {modelInfo['units'] + " (Absolute)" if modelInfo['absolute_acceptance'] else "% (Relative)"}""",
         ]
     ])
     docObj.add_picture("filesReport/profiles/figPROFILE_" + idProfile + ".png", width=Mm(150))
