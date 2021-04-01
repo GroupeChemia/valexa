@@ -119,7 +119,7 @@ def generateProfile(docObj, **data):
             f"{modelInfo['min_loq']} {modelInfo['units']}",
             f"{modelInfo['max_loq']} {modelInfo['units']}",
             f"""{
-                str(modelInfo['correction_factor']) + ("", " (Forced)")[modelInfo['forced_correction_value'] is not None] 
+                str(modelInfo['correction_factor']) + " (" + modelInfo['has_correction'] + ")" + ("", " (Forced)")[modelInfo['forced_correction_value'] is not None] 
                 if modelInfo['has_correction'] else "---"
             }""",
             f"{modelInfo['average_recovery']}",
@@ -250,7 +250,7 @@ def generatePartCalibration(docObj, **data):
     fillTable(table,
               ["Série", "Equation", "R^2"],
               [
-                  [str(item) for item in list(range(len(data['regression_info'])))],  # nb ligne tabular,
+                  [str(item+1) for item in list(range(len(data['regression_info'])))],  # nb ligne tabular,
                   [str(item['function_string']) for item in data['regression_info']],
                   [str(item['rsquared']) for item in data['regression_info']]
               ])

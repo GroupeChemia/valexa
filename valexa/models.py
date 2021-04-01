@@ -151,7 +151,7 @@ class Model:
             self.root_function = lambdify(x, self.function_string)
             self.miller_lod = self.__get_miller_lod(self.fit, self.root_function)
 
-        self.data.add_value(self.__get_model_roots, "x_calc")
+        self.data.add_value(self.__get_model_roots(), "x_calc")
         self.rsquared: Optional[float] = None
         if self.multiple_calibration:
             self.rsquared = np.mean([s.rsquared for s in self.fit.values()])
@@ -191,8 +191,7 @@ class Model:
         else:
             return pd.DataFrame()
 
-    @property
-    def __get_model_roots(self) -> pd.Series:
+    def __get_model_roots(self, signal_data: str = "y") -> pd.Series:
         list_of_roots: List[Union[float, None]] = []
         for validation_value in self.data.validation_data.iterrows():
             root_value: pd.DataFrame = pd.DataFrame()
@@ -200,7 +199,7 @@ class Model:
                 root_value = self.__sanitize_roots(
                     solveset(
                         self.root_function[validation_value[1]["Series"]](x)
-                        - validation_value[1]["y"],
+                        - validation_value[1][signal_data],
                         x,
                         S.Reals,
                     )
@@ -208,7 +207,7 @@ class Model:
             else:
                 root_value = self.__sanitize_roots(
                     solveset(
-                        self.root_function(x) - validation_value[1]["y"], x, S.Reals
+                        self.root_function(x) - validation_value[1][signal_data], x, S.Reals
                     )
                 )
             if len(root_value) > 0:
@@ -257,6 +256,11 @@ class Model:
 
     def add_value(self, value: pd.Series, name: str) -> None:
         return self.data.add_value(value, name)
+
+    def add_corrected_value_y(self, corrected_value: pd.Series) -> None:
+        self.add_value(corrected_value, "y_corr")
+        corrected_value = self.__get_model_roots("y_corr")
+        return self.data.add_corrected_value(corrected_value)
 
     def add_corrected_value(self, corrected_value: pd.Series) -> None:
         return self.data.add_corrected_value(corrected_value)

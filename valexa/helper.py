@@ -56,16 +56,21 @@ def format_json_to_data(data):
         else:
             for x in range(1, len(xs)+1):
                 columns_name = {"series": "Series", "level": "Level", "x" + str(x): "x", "y" + str(x): "y"}
-                temp_dataframe = validation[["series", "level", "x" + str(x), "y" + str(x)]].rename(
+                temp_dataframe = calibration[["series", "level", "x" + str(x), "y" + str(x)]].rename(
                     columns=columns_name
                 )
                 calibration_dataframe = pd.concat(
                     [calibration_dataframe, temp_dataframe], ignore_index=True
                 )
 
+        validation_dataframe = pd.DataFrame(validation_dataframe[(validation_dataframe.Series > 3)]).reset_index(drop=True)
+        calibration_dataframe = pd.DataFrame(calibration_dataframe[(calibration_dataframe.Series > 3)]).reset_index(drop=True)
+
+
         return {
+            # Quick test
             "Validation": validation_dataframe,
-            "Calibration": calibration_dataframe,
+            "Calibration": calibration_dataframe
         }
 
     else:

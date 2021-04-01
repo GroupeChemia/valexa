@@ -65,6 +65,7 @@ class DataObject:
         self.validation_data.rename(columns={"x_calc": "x_raw"}, inplace=True)
         self.add_value(corrected_value, "x_calc")
 
+
     def get_level(
         self, level: int, data_type: str = "validation"
     ) -> Optional[pd.DataFrame]:

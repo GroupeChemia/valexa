@@ -947,10 +947,11 @@ class Profile:
         # debug check
         if min_loq is not None and max_loq is not None:
             if min_loq > max_loq:  # ensure that the min_loq is smaller than the max_loq
-                temp = min_loq
-                min_loq = max_loq
-                max_loq = temp
+                # temp = min_loq
+                # min_loq = max_loq
+                # max_loq = temp
                 #print("Error here")
+                pass
 
         return [min_loq, max_loq]
 
@@ -1132,13 +1133,21 @@ class Profile:
                 },
                 "rsquared": {"value": x_plot.rsquared, "p_value": x_plot.f_pvalue, "std_error": ""}
             }
+            if self.correction_type == "slope" and not self.absolute_acceptance:
+                corrected_value: pd.Series = pd.Series(
+                    self.model.data_y() * self.correction_factor
+                )
+                self.model.add_corrected_value_y(
+                    corrected_value.map(lambda x: roundsf(x, self.sigfig))
+                )
+            else:
+                corrected_value: pd.Series = pd.Series(
+                    self.model.data_x_calc * self.correction_factor
+                )
+                self.model.add_corrected_value(
+                    corrected_value.map(lambda x: roundsf(x, self.sigfig))
+                )
 
-            corrected_value: pd.Series = pd.Series(
-                self.model.data_x_calc * self.correction_factor
-            )
-            self.model.add_corrected_value(
-                corrected_value.map(lambda x: roundsf(x, self.sigfig))
-            )
 
     def generate_correction_average(self):
         ratio: float = roundsf(

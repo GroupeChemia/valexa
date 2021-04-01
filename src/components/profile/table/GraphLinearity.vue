@@ -98,7 +98,7 @@
   export default {
     name: "GraphLinearity",
     props: {
-      hasCorrection: Boolean,
+      hasCorrection: String,
       graphsData: Object,
       tableData: Object
     },

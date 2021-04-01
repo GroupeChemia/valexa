@@ -30,7 +30,11 @@
           {text: 'Y', value: 'y'},
         ]
         if (this.tableData[0].hasOwnProperty('x_raw')) {
-          header.push({text: 'Calculated', value: 'x_raw'}, {text: 'Corrected', value: 'x_calc'})
+          header.push(
+              {text: 'Corrected Y', value: 'y_corr'},
+              {text: 'Calculated', value: 'x_raw'},
+              {text: 'Corrected', value: 'x_calc'}
+              )
         } else {
           header.push({text: 'Calculated', value: 'x_calc'})
         }

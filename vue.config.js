@@ -14,7 +14,7 @@ module.exports = {
     pluginOptions: {
       electronBuilder: {
         nodeIntegration: true,
-        externals: ['plotly.js-dist']
+        externals: ['plotly.js-dist', 'moment.js', '@statnett/vue-plotly']
       },
       i18n: {
         locale: 'en',

@@ -49,7 +49,9 @@
                   <tr>
                     <td>Correction</td>
                     <td>
-                      <span v-if="tableData.has_correction">{{tableData.correction_factor}}
+                      <span v-if="tableData.has_correction">
+                        {{tableData.correction_factor}} ({{tableData.has_correction}})
+
                         <span v-if="tableData.forced_correction_value>0">(Forced)</span>
                       </span>
                       <span v-else>---</span>
