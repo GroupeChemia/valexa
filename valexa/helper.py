@@ -63,10 +63,6 @@ def format_json_to_data(data):
                     [calibration_dataframe, temp_dataframe], ignore_index=True
                 )
 
-        validation_dataframe = pd.DataFrame(validation_dataframe[(validation_dataframe.Series > 3)]).reset_index(drop=True)
-        calibration_dataframe = pd.DataFrame(calibration_dataframe[(calibration_dataframe.Series > 3)]).reset_index(drop=True)
-
-
         return {
             # Quick test
             "Validation": validation_dataframe,
